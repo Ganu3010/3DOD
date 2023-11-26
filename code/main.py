@@ -1,35 +1,29 @@
 from flask import Flask, request, jsonify
-
+from models.pnpp import * 
+import torch
 app = Flask(__name__)
+model = get_model(13)
+checkpoint = torch.load('models/best_model.pth', map_location=torch.device('cpu'))
+model.load_state_dict(checkpoint['model_state_dict'])
+model.eval()
 
-books = [
-    {
-        'name': 'Myth of Sisyphus',
-        'author':"Albert Camus"
-    },
-    {
-        'name': 'The Trouble with Being Born',
-        'author': 'E. M. Cioran'
-    }
-]
 
-# @app.route('/')
-# def home():
-#     return "<h1>Hello Excelize</h1>"
+def transform_image(img):
+    return torch.rand(6, 9, 2048)
 
-@app.route('/', methods=['POST', 'GET'])
-def result():
-    if request.method == 'GET':
-        return jsonify(books)
-    elif request.method == 'POST':
-        name = request.form['name']
-        author = request.form['author']
-        books.append({'name': name, 'author': author})
-        return jsonify(books)
+@app.route('/', methods=  ['GET'])
+def home():
+    return jsonify([])
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    img = request.form['file']
+    xyz = transform_image(img)
+    result = model(xyz)    
     
-    else:
-        return 'Nothing', 404
-
+    return jsonify(result)
+    
 
 if __name__=="__main__":
     app.run(debug=True)
+
