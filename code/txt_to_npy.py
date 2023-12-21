@@ -1,6 +1,6 @@
 import numpy as np
 
-def txt_to_npy(txt_path, out_filename):
+def txt_to_npy(txt_path):
     """ Convert original dataset files to npy file (each line is XYZRGBL).
         We aggregated all the points from each instance in the room.
         L --> Label which is UNCLASSIFIED for now
@@ -31,7 +31,7 @@ def txt_to_npy(txt_path, out_filename):
     xyz_min = np.amin(data_label, axis=0)[0:3]
     data_label[:, 0:3] -= xyz_min
 
-    np.save(out_filename, data_label)
+    return data_label
 
 def read_npy(npy_file):
     data = np.load(npy_file)
