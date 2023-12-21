@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from models.pnpp import * 
 from txt_to_npy import txt_to_npy
 from data_loader import *
+from flask_cors import CORS 
+import os
 import torch
 from tqdm import tqdm
 g_class2color = {0: [0, 255, 0], 1: [0, 0, 255], 2: [0, 255, 255], 3: [255, 255, 0], 
@@ -22,6 +24,12 @@ def add_vote(vote_label_pool, point_idx, pred_label, weight):
             if weight[b, n] != 0 and not np.isinf(weight[b, n]):
                 vote_label_pool[int(point_idx[b, n]), int(pred_label[b, n])] += 1
     return vote_label_pool
+CORS(app)
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+   os.makedirs(UPLOAD_FOLDER)
 
 def classify(img, num_point = 4096, num_votes = 5):
     data = ScannetDatasetWholeScene([img])
@@ -63,7 +71,6 @@ def classify(img, num_point = 4096, num_votes = 5):
         
     return filename.split('/')[1]
 
-
 @app.route('/', methods=  ['GET'])
 def home():
     return jsonify([])
@@ -78,6 +85,23 @@ def predict():
         return send_from_directory('predictions/', result), 201
     else:
         return jsonify([]), 404
+
+@app.route('/upload', methods=['POST'])
+
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if file:
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(filename)
+        return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
+
 
 if __name__=="__main__":
     app.run(debug=True)
