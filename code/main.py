@@ -2,13 +2,22 @@ from flask import Flask, request, jsonify
 from models.pnpp import * 
 from txt_to_npy import txt_to_npy
 from data_loader import *
+from flask_cors import CORS 
+import os
 import torch
+
 app = Flask(__name__)
 model = get_model(13)
 checkpoint = torch.load('models/best_model.pth', map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
+CORS(app)
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+   os.makedirs(UPLOAD_FOLDER)
 
 def classify(img, num_point = 4096):
     data = ScannetDatasetWholeScene([img])
@@ -29,7 +38,6 @@ def classify(img, num_point = 4096):
     return seg_pred
 
 
-
 @app.route('/', methods=  ['GET'])
 def home():
     return jsonify([])
@@ -44,6 +52,23 @@ def predict():
         return jsonify(result), 201
     else:
         return jsonify([]), 404
+
+@app.route('/upload', methods=['POST'])
+
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if file:
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(filename)
+        return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
+
 
 if __name__=="__main__":
     app.run(debug=True)
