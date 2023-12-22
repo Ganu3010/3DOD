@@ -16,6 +16,11 @@ checkpoint = torch.load('models/best_model.pth', map_location=torch.device('cpu'
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
+ALLOWED_EXTENSIONS = {'npy'}
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def add_vote(vote_label_pool, point_idx, pred_label, weight):
     B = pred_label.shape[0]
     N = pred_label.shape[1]
@@ -79,15 +84,13 @@ def home():
 def predict():
     if request.method == 'POST':    
     
-        img = request.files['file']
-        result = classify(img)
-
+        file = request.form['filename']
+        result = classify(file)
         return send_from_directory('predictions/', result), 201
     else:
         return jsonify([]), 404
 
 @app.route('/upload', methods=['POST'])
-
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
@@ -97,7 +100,7 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
-    if file:
+    if file and allowed_file(file):
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filename)
         return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
