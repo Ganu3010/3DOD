@@ -115,7 +115,27 @@ def upload_file():
     if file:
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filename)
-        return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
+
+        #conversion from .txt to .pcd
+        # Process the point cloud
+        output_path = process_point_cloud_file(file_path)
+      
+        #return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
+        return jsonify(success=True, message="Point cloud processed successfully", output_path=output_path)
+
+
+def process_point_cloud_file(file_path):
+    # Read the point cloud from the input file
+    pcd = o3d.io.read_point_cloud(file_path, format="xyzrgb")
+
+    for point in pcd.colors:
+        point /= 255.0
+
+    # Save the processed point cloud to a new file
+    output_path = 'uploads/output.pcd'
+    o3d.io.write_point_cloud(output_path, pcd)
+
+    return output_path
 
 if __name__=="__main__":
     app.run(debug=True)
