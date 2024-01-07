@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from models.pnpp import * 
-from txt_to_npy import txt_to_npy
+# from txt_to_npy import txt_to_npy
 from data_loader import *
 from flask_cors import CORS 
 import os
@@ -11,7 +11,7 @@ g_class2color = {0: [0, 255, 0], 1: [0, 0, 255], 2: [0, 255, 255], 3: [255, 255,
                  4: [255, 0, 255], 5: [100, 100, 255], 6: [200, 200, 100], 7: [170, 120, 200],
                  8: [255, 0, 0], 9: [200, 100, 100], 10: [10, 200, 100], 11: [200, 200, 200], 
                  12: [50, 50, 50]}
-app = Flask(__name__)
+app = Flask(__name__,static_url_path='/static')
 model = get_model(13)
 checkpoint = torch.load('models/best_model.pth', map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -81,10 +81,13 @@ def classify(img, num_point = 4096, num_votes = 5):
     return filename.split('/')[1]
 
 
-@app.route('/', methods=  ['GET'])
-def home():
-    return jsonify([])
+# @app.route('/', methods=  ['GET'])
+# def home():
+#     return jsonify([])
 
+@app.route('/')
+def index():
+    return render_template('Home.html')
 
 @app.route('/predict', methods=['POST', 'GET'])
 def predict():
@@ -102,20 +105,49 @@ def predict():
 
 @app.route('/upload', methods=['POST'])
 
-
 def upload_file():
+
+    # print(request)
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
 
     file = request.files['file']
 
+
+    # print(file)
+    # print('yes')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
     if file:
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filename)
-        return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
+
+        #conversion from .txt to .pcd
+        # Process the point cloud
+        # output_path = process_point_cloud_file('predictions/)
+      
+        #return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
+        return jsonify(success=True, message="Point cloud processed successfully", output_path=output_path)
+
+
+@app.route('/page', methods=['GET'])
+def visualize():
+    return render_template('pcd.html',file_name='output_cloud_1')
+
+
+# def process_point_cloud_file(file_path):
+#     # Read the point cloud from the input file
+#     pcd = o3d.io.read_point_cloud(file_path, format="xyzrgb")
+
+#     for point in pcd.colors:
+#         point /= 255.0
+
+#     # Save the processed point cloud to a new file
+#     output_path = 'static/input/output.pcd'
+#     o3d.io.write_point_cloud(output_path, pcd)
+
+#     return output_path
 
 if __name__=="__main__":
     app.run(debug=True)
