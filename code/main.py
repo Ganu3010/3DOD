@@ -41,7 +41,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 
 def classify(img, num_point = 4096, num_votes = 5):
-    data = ScannetDatasetWholeScene([img])
+    data = DataLoader([img])
     for batch_idx in range(len(data)):
         whole_scene_data = data.scene_points_list[batch_idx]
         whole_scene_label = data.semantic_labels_list[batch_idx]
@@ -76,7 +76,7 @@ def classify(img, num_point = 4096, num_votes = 5):
         with open(filename, 'w') as f:
             for i in range(len(whole_scene_label)):
                 color = g_class2color[pred_label[i]]
-                f.write('{} {} {} {} {} {}'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
+                f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
         
     return filename.split('/')[1]
 

@@ -1,54 +1,16 @@
-from models.pnpp import *
-import torch
-from main import classify
-from data_loader import *
-import os
-from flask import Flask, flash, request, redirect, url_for, send_from_directory
-from werkzeug.utils import secure_filename
+# from models.pnpp import *
+# import torch
+# from main import classify
+# from data_loader import *
+# import os
+# # from flask import Flask, flash, request, redirect, url_for, send_from_directory
+# from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = 'areas/'
-ALLOWED_EXTENSIONS = {'npy'}
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# # img = np.load('areas/Area_1_conferenceRoom_1.npy'
+# img = ['areas/']
+# output = classify(img='areas/Area_1_conferenceRoom_1.npy', num_votes=1)
 
-
-@app.route('/', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            result = classify(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            result = result.split('/')[1]
-            return redirect(url_for('download_file', name=result))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
-
-
-@app.route('/uploads/<name>')
-def download_file(name):
-    return send_from_directory('predictions/', name)
-
-
-if __name__=='__main__':
-    app.run(debug=True)
+with open('predictions/output_1.txt') as f:
+    for ech in f:
+        print(ech, end='')
+        

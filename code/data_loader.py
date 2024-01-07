@@ -1,6 +1,6 @@
 import numpy as np
 
-class ScannetDatasetWholeScene():
+class DataLoader():
     # prepare to give prediction on each points
     def __init__(self, files, block_points=4096, split='test', test_area=5, stride=0.5, block_size=1.0, padding=0.001):
         self.block_points = block_points
@@ -13,6 +13,7 @@ class ScannetDatasetWholeScene():
         self.semantic_labels_list = []
         self.room_coord_min, self.room_coord_max = [], []
         for file in files:
+            print(file) 
             data = np.load(file)
             points = data[:, :3]
             self.scene_points_list.append(data[:, :6])
