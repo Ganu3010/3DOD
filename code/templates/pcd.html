@@ -14,8 +14,16 @@
                 "three/addons/": "https://unpkg.com/three@v0.160.0/examples/jsm/"
               }
             }
-          </script>
-		<script src="{{ url_for('static', filename='input/{{file_name}}.pcd') }}"></script>
+        </script>
+		<!-- <script>
+			const dynamicFileName = "{{ url_for('static', filename='input/' + file_name + '.pcd') }}";
+		</script> -->
+
+		<script>
+			const file_name = '{{ file_name }}';
+			const dynamicFileName = `../static/input/${file_name}.pcd`;
+		</script>
+		
 	</head>
 	<body>
 		<!-- <div id="info">
@@ -66,11 +74,11 @@
 				//scene.add( new THREE.AxesHelper( 1 ) );
 
 				const loader = new PCDLoader();
-				loader.load( '../static/input/output_cloud_1.pcd', function ( points ) {
+				loader.load( dynamicFileName, function ( points ) {
 
 					points.geometry.center();
 					points.geometry.rotateX( Math.PI );
-					points.name = 'output_cloud.pcd';
+					points.name = file_name + '.pcd';
 					scene.add( points );
 
 					//
