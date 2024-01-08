@@ -21,7 +21,7 @@
 
 		<script>
 			const file_name = '{{ file_name }}';
-			const dynamicFileName = `../static/input/${file_name}.pcd`;
+			// const dynamicFileName = `${file_name}.pcd`;
 		</script>
 		
 	</head>
@@ -74,11 +74,11 @@
 				//scene.add( new THREE.AxesHelper( 1 ) );
 
 				const loader = new PCDLoader();
-				loader.load( dynamicFileName, function ( points ) {
+				loader.load( file_name, function ( points ) {
 
 					points.geometry.center();
 					points.geometry.rotateX( Math.PI );
-					points.name = file_name + '.pcd';
+					points.name = file_name;
 					scene.add( points );
 
 					//
