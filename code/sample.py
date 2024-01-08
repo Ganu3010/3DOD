@@ -1,12 +1,5 @@
-from flask import Flask, request, jsonify, render_template
+import open3d as o3d
 
-app = Flask(__name__,static_url_path='/static')
+pcd = o3d.io.read_point_cloud('predictions/output_2.pcd')
 
-
-@app.route('/')
-def index():
-    return render_template('Home.html')
-
-
-if __name__ == '__main__':
-    app.run(debug = True)
+o3d.visualization.draw_geometries([pcd])

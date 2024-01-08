@@ -97,7 +97,7 @@ def classify(img, num_point = 4096, num_votes = 5):
             for i in range(len(whole_scene_label)):
                 color = g_class2color[pred_label[i]]
                 f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
-    result = txt_to_pcd(filename)
+    result = to_pcd(filename)
     return result
 
 @app.route('/')
@@ -111,7 +111,7 @@ def predict():
         file = request.files['file']
         print(file)
         print("file name "+file.filename)
-        result = classify(file)
+        result = classify(file, num_votes=1)
         return render_template('pcd.html', file_name = result)
     else:
         return jsonify([]), 404
