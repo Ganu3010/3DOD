@@ -104,17 +104,17 @@ def classify(img, num_point = 4096, num_votes = 5):
 def index():
     return render_template('Home.html')
 
-@app.route('/predict', methods=['POST', 'GET'])
-def predict():
-    if request.method == 'POST':    
+# @app.route('/predict', methods=['POST', 'GET'])
+# def predict():
+#     if request.method == 'POST':    
     
-        file = request.files['file']
-        print(file)
-        print("file name "+file.filename)
-        result = classify(file, num_votes=1)
-        return render_template('pcd.html', file_name = result)
-    else:
-        return jsonify([]), 404
+#         file = request.files['file']
+#         print(file)
+#         print("file name "+file.filename)
+#         result = classify(file, num_votes=1)
+#         return render_template('pcd.html', file_name = result)
+#     else:
+#         return jsonify([]), 404
 
 
 
@@ -137,7 +137,7 @@ def upload_file():
 
 @app.route('/page', methods=['POST'])
 def visualize():
-    file_name = 'uploads/' + request.files['file'].filename
+    file_name = 'predictions/' + request.files['file'].filename
     file_name = to_pcd(file_name)
     return render_template('pcd.html',file_name=file_name)
 
