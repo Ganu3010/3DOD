@@ -13,7 +13,6 @@
     <br></br>
     <br></br>
     <h3 align="center">Model input</h3>
-    <!-- {/* <form className="form"> */} -->
       <div class="form">
         <input type="file" id="fileInput">
         <div>
@@ -27,7 +26,6 @@
             Visualize
           </button>
         </div>
-        <!-- <VisualizeButton></VisualizeButton> -->
       </div>
 </body>
 <script>
@@ -71,9 +69,6 @@
       fetch('/predict', {
         method: 'POST',
         body: formData,
-        // headers: {
-        //   "Content-Type": "multipart/form-data",
-        // }
       })
         .then(response => {
           if (!response.ok) {
@@ -92,7 +87,7 @@
 
   function visualize(){
 
-      console.log('hi')
+      // console.log('hi')
       window.location.href = '/page'
     //   document.getElementById('third').addEventListener('click', function () {
      

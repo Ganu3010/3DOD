@@ -1,16 +1,10 @@
-# from models.pnpp import *
-# import torch
-# from main import classify
-# from data_loader import *
-# import os
-# # from flask import Flask, flash, request, redirect, url_for, send_from_directory
-# from werkzeug.utils import secure_filename
+import os
+postfix = 0
+for file in os.listdir('predictions/'):
+    num = int(file.split('_')[1].split('.')[0])
+    if num>postfix:
+        postfix = num
+postfix += 1
+filename = 'predictions/output_{}.txt'.format(postfix)
 
-# # img = np.load('areas/Area_1_conferenceRoom_1.npy'
-# img = ['areas/']
-# output = classify(img='areas/Area_1_conferenceRoom_1.npy', num_votes=1)
-
-with open('predictions/output_1.txt') as f:
-    for ech in f:
-        print(ech, end='')
-        
+print(filename)

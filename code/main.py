@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, render_template
 from models.pnpp import * 
 # from txt_to_npy import txt_to_npy
 from data_loader import *
-from flask_cors import CORS 
+# from flask_cors import CORS 
 import os
 import torch
 from tqdm import tqdm
@@ -32,12 +32,14 @@ def add_vote(vote_label_pool, point_idx, pred_label, weight):
                 vote_label_pool[int(point_idx[b, n]), int(pred_label[b, n])] += 1
     return vote_label_pool
     
-CORS(app)
+# CORS(app)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
    os.makedirs(UPLOAD_FOLDER)
+
+output_path = 'predictions/'
 
 
 def classify(img, num_point = 4096, num_votes = 5):
@@ -55,7 +57,6 @@ def classify(img, num_point = 4096, num_votes = 5):
             batch_label = np.zeros((1, num_point))
             batch_point_index = np.zeros((1, num_point))
             batch_smpw = np.zeros((1, num_point))
-            print(num_blocks)
             with torch.no_grad():
                 for block in tqdm(range(num_blocks), total = num_blocks):
                     end_idx = min((block+1), num_blocks)
@@ -72,13 +73,19 @@ def classify(img, num_point = 4096, num_votes = 5):
                     batch_pred_label = seg_pred.contiguous().data.max(2)[1].numpy()
                     vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...], batch_pred_label[0:real_batch_size, ...], batch_smpw[0:real_batch_size, ...])
         pred_label = np.argmax(vote_label_pool, 1)
-        filename = 'predictions/output_{}.txt'.format(1)
+        postfix = 0
+        for file in os.listdir('predictions/'):
+            num = int(file.split('_')[1].split('.')[0])
+            if num>postfix:
+                postfix = num
+        postfix += 1
+        filename = 'predictions/output_{}.txt'.format(postfix)
         with open(filename, 'w') as f:
             for i in range(len(whole_scene_label)):
                 color = g_class2color[pred_label[i]]
                 f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
         
-    return filename.split('/')[1]
+    return filename
 
 
 # @app.route('/', methods=  ['GET'])
@@ -97,25 +104,20 @@ def predict():
         print(file)
         print("file name "+file.filename)
         result = classify(file)
-        return send_from_directory('predictions/', result), 201
+        return send_from_directory(result), 201
     else:
         return jsonify([]), 404
 
 
 
 @app.route('/upload', methods=['POST'])
-
 def upload_file():
 
-    # print(request)
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
 
     file = request.files['file']
 
-
-    # print(file)
-    # print('yes')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
