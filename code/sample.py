@@ -1,10 +1,12 @@
-import os
-postfix = 0
-for file in os.listdir('predictions/'):
-    num = int(file.split('_')[1].split('.')[0])
-    if num>postfix:
-        postfix = num
-postfix += 1
-filename = 'predictions/output_{}.txt'.format(postfix)
+from flask import Flask, request, jsonify, render_template
 
-print(filename)
+app = Flask(__name__,static_url_path='/static')
+
+
+@app.route('/')
+def index():
+    return render_template('Home.html')
+
+
+if __name__ == '__main__':
+    app.run(debug = True)

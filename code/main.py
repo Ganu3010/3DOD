@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from models.pnpp import * 
-# from txt_to_npy import txt_to_npy
 from data_loader import *
-# from flask_cors import CORS 
 import os
 import torch
 from tqdm import tqdm
+import open3d as o3d
+
 
 g_class2color = {0: [0, 255, 0], 1: [0, 0, 255], 2: [0, 255, 255], 3: [255, 255, 0], 
                  4: [255, 0, 255], 5: [100, 100, 255], 6: [200, 200, 100], 7: [170, 120, 200],
@@ -18,7 +18,7 @@ model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
 
-ALLOWED_EXTENSIONS = {'npy'}
+ALLOWED_EXTENSIONS = {'npy', 'pcd'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -32,7 +32,6 @@ def add_vote(vote_label_pool, point_idx, pred_label, weight):
                 vote_label_pool[int(point_idx[b, n]), int(pred_label[b, n])] += 1
     return vote_label_pool
     
-# CORS(app)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -41,6 +40,20 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 output_path = 'predictions/'
 
+def to_pcd(ip_file):
+    if ip_file.split('.')[-1] == 'pcd':
+        return ip_file
+    output_file = ip_file.split('.')[0] + '.pcd'    
+    points = np.loadtxt(ip_file) if ip_file.split('.')[-1] == 'txt' else np.load(ip_file)
+    op = o3d.geometry.PointCloud()
+    points[:, -3:] /= 255
+    xyz_min = np.amin(points, axis=0)[:3]
+    points[:, :3] -= xyz_min
+    op.points = o3d.utility.Vector3dVector(points[:, :3])
+    op.colors = o3d.utility.Vector3dVector(points[:, -3:])
+    o3d.io.write_point_cloud(output_file, op)
+    return output_file
+        
 
 def classify(img, num_point = 4096, num_votes = 5):
     data = DataLoader([img])
@@ -84,13 +97,8 @@ def classify(img, num_point = 4096, num_votes = 5):
             for i in range(len(whole_scene_label)):
                 color = g_class2color[pred_label[i]]
                 f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
-        
-    return filename
-
-
-# @app.route('/', methods=  ['GET'])
-# def home():
-#     return jsonify([])
+    result = txt_to_pcd(filename)
+    return result
 
 @app.route('/')
 def index():
@@ -104,7 +112,7 @@ def predict():
         print(file)
         print("file name "+file.filename)
         result = classify(file)
-        return send_from_directory(result), 201
+        return render_template('pcd.html', file_name = result)
     else:
         return jsonify([]), 404
 
@@ -117,39 +125,21 @@ def upload_file():
         return jsonify({'error': 'No file part'})
 
     file = request.files['file']
-
+    print('Uploading')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
     if file:
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filename)
-
-        #conversion from .txt to .pcd
-        # Process the point cloud
-        # output_path = process_point_cloud_file('predictions/)
-      
-        #return jsonify({'message': 'File uploaded successfully', 'filename': file.filename})
         return jsonify(success=True, message="Point cloud processed successfully", output_path=output_path)
 
 
-@app.route('/page', methods=['GET'])
+@app.route('/page', methods=['POST'])
 def visualize():
-    return render_template('pcd.html',file_name='output_cloud_1')
-
-
-# def process_point_cloud_file(file_path):
-#     # Read the point cloud from the input file
-#     pcd = o3d.io.read_point_cloud(file_path, format="xyzrgb")
-
-#     for point in pcd.colors:
-#         point /= 255.0
-
-#     # Save the processed point cloud to a new file
-#     output_path = 'static/input/output.pcd'
-#     o3d.io.write_point_cloud(output_path, pcd)
-
-#     return output_path
+    file_name = 'uploads/' + request.files['file'].filename
+    file_name = to_pcd(file_name)
+    return render_template('pcd.html',file_name=file_name)
 
 if __name__=="__main__":
     app.run(debug=True)

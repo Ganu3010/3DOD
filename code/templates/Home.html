@@ -10,6 +10,7 @@
   <title>Document</title>
 </head>
 <body>
+    
     <br></br>
     <br></br>
     <h3 align="center">Model input</h3>
@@ -26,7 +27,7 @@
             Visualize
           </button>
         </div>
-      </div>
+      </div>    
 </body>
 <script>
   function upload(){
@@ -40,9 +41,6 @@
       fetch('/upload', {
         method: 'POST',
         body: formData,
-        // headers: {
-        //   "Content-Type": "multipart/form-data",
-        // }
       })
         .then(response => {
           if (!response.ok) {
@@ -86,30 +84,27 @@
   }
 
   function visualize(){
-
-      // console.log('hi')
-      window.location.href = '/page'
-    //   document.getElementById('third').addEventListener('click', function () {
-     
-    //   fetch('/visualize', {
-    //     method: 'GET',
-    //     // headers: {
-    //     //   "Content-Type": "multipart/form-data",
-    //     // }
-    //   })
-    //     .then(response => {
-    //       if (!response.ok) {
-    //         throw new Error('Network response was not ok');
-    //       }
-    //       return response.text();
-    //     })
-    //     .then(result => {
-    //       console.log(result);
-    //     })
-    //     .catch(error => {
-    //       console.error('Error during file upload:', error);
-    //     });
-    // });
+    document.getElementById('third').addEventListener('click', function () {
+      var fileInput = document.getElementById('fileInput');
+      var formData = new FormData()
+      formData.append('file', fileInput.files[0])
+      fetch('/page', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then(result => {
+          console.log(result);
+        })
+        .catch(error => {
+          console.error('Error during file upload:', error);
+        });
+    });
   }
   
 </script>
