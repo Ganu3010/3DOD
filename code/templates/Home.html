@@ -30,6 +30,9 @@
       </div>    
 </body>
 <script>
+  function testing(){
+    fetch('')
+  }
   function upload(){
 
     document.getElementById('first').addEventListener('click', function () {
@@ -99,7 +102,9 @@
           return response.text();
         })
         .then(result => {
-          console.log(result);
+          document.open();
+          document.write(result);
+          document.close();
         })
         .catch(error => {
           console.error('Error during file upload:', error);

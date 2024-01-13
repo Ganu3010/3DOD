@@ -21,14 +21,22 @@
 
 		<script>
 			const file_name = '{{ file_name }}';
-			//const dynamicFileName = `../${file_name}`;
+			const dynamicFileName = `../${file_name}`;
 		</script>
 		
 	</head>
 	<body>
-
+		<!-- <div id="div1">
+			<p id="p1">This is a paragraph.</p>
+			<p id="p2">This is another paragraph.</p>
+		  </div> -->
 		<script type="module">
+			// const para = document.createElement("p");
+			// const node = document.createTextNode(dynamicFileName);
+			// para.appendChild(node);
 
+			// const element = document.getElementById("div1");
+			// element.appendChild(para);
 			import * as THREE from 'https://threejs.org/build/three.module.js'; 
 			import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
 			import { PCDLoader } from 'https://threejs.org/examples/jsm/loaders/PCDLoader.js';
@@ -61,12 +69,10 @@
 				//scene.add( new THREE.AxesHelper( 1 ) );
 
 				const loader = new PCDLoader();
-				loader.load( file_name, function ( points ) {
+				loader.load( dynamicFileName, function ( points ) {
 
 					points.geometry.center();
 					points.geometry.rotateX( Math.PI );
-					//const name = dynamicFileName.split('/')
-					//points.name = name[name.length - 1].split('.')[0];
 					scene.add( points );
 
 					//
@@ -105,5 +111,36 @@
 			}
 
 		</script>
+		<div class="form">
+			<div>
+				<button class="btn" id="back" onclick="testing()">
+				  Back
+				</button>
+		</div>
 	</body>
+	<script>
+		function testing(){
+		document.getElementById('back').addEventListener('click', function () {
+
+      	fetch('/', {
+        	method: 'GET'
+      	})
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then(result => {
+			document.open();
+          	document.write(result);
+          	document.close();
+        })
+        .catch(error => {
+          console.error('Error during file upload:', error);
+        });
+    });
+  }
+	</script>
 </html>
+

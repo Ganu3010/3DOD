@@ -11,7 +11,7 @@ g_class2color = {0: [0, 255, 0], 1: [0, 0, 255], 2: [0, 255, 255], 3: [255, 255,
                  4: [255, 0, 255], 5: [100, 100, 255], 6: [200, 200, 100], 7: [170, 120, 200],
                  8: [255, 0, 0], 9: [200, 100, 100], 10: [10, 200, 100], 11: [200, 200, 200], 
                  12: [50, 50, 50]}
-app = Flask(__name__,static_url_path='/static')
+app = Flask(__name__)
 model = get_model(13)
 checkpoint = torch.load('models/best_model.pth', map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -100,21 +100,21 @@ def classify(img, num_point = 4096, num_votes = 5):
     result = to_pcd(filename)
     return result
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     return render_template('Home.html')
 
-# @app.route('/predict', methods=['POST', 'GET'])
-# def predict():
-#     if request.method == 'POST':    
+@app.route('/predict', methods=['POST', 'GET'])
+def predict():
+    if request.method == 'POST':    
     
-#         file = request.files['file']
-#         print(file)
-#         print("file name "+file.filename)
-#         result = classify(file, num_votes=1)
-#         return render_template('pcd.html', file_name = result)
-#     else:
-#         return jsonify([]), 404
+        file = request.files['file']
+        print(file)
+        print("file name "+file.filename)
+        result = classify(file, num_votes=1)
+        return render_template('pcd.html', file_name = result)
+    else:
+        return jsonify([]), 404
 
 
 
@@ -135,11 +135,11 @@ def upload_file():
         return jsonify(success=True, message="Point cloud processed successfully", output_path=output_path)
 
 
-@app.route('/page', methods=['POST'])
+@app.route('/page', methods=['GET','POST'])
 def visualize():
-    file_name = 'predictions/' + request.files['file'].filename
-    file_name = to_pcd(file_name)
-    return render_template('pcd.html',file_name=file_name)
+    file_name = 'uploads/Area_1_copyRoom_1.pcd'
+    print(file_name)
+    return render_template('pcd.html', file_name=file_name)
 
 if __name__=="__main__":
     app.run(debug=True)
