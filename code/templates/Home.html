@@ -20,7 +20,7 @@
           <button class="btn" id="first" onclick="upload()">
             Upload
           </button>
-          <button class="btn"id="second"onClick="predict()">
+          <button class="btn"id="second" onClick="predict()">
             Predict
           </button>
           <button class="btn" id="third" onClick="visualize()">
@@ -102,9 +102,17 @@
           return response.text();
         })
         .then(result => {
+<<<<<<< HEAD
           document.open();
           document.write(result);
           document.close();
+=======
+          if (result.success) {
+                    window.location.href = '/page';
+                } else {
+                    console.error('Error during file upload:', result.message);
+                }
+>>>>>>> 8f0d109b7c821bdcb602fcc3b58f1f344a5f6d67
         })
         .catch(error => {
           console.error('Error during file upload:', error);
