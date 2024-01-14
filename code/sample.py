@@ -1,11 +1,7 @@
-# import open3d as o3d
-
-# pcd = o3d.io.read_point_cloud('predictions/output_4.pcd')
-
-# o3d.visualization.draw_geometries([pcd])
+import open3d as o3d
 
 
-from flask import Flask, request
-app = Flask(__name__,static_url_path='/static')
-if __name__ == "__main__":
-    app.run(debug = True)
+# o3d.geometry.visualize('static/input/Area_1_conferenceRoom_2.pcd')
+pcd = o3d.io.read_point_cloud('static/input/Area_1_conferenceRoom_2.pcd')
+
+o3d.visualization.draw_geometries([pcd])

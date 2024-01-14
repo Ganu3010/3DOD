@@ -11,19 +11,12 @@ g_class2color = {0: [0, 255, 0], 1: [0, 0, 255], 2: [0, 255, 255], 3: [255, 255,
                  4: [255, 0, 255], 5: [100, 100, 255], 6: [200, 200, 100], 7: [170, 120, 200],
                  8: [255, 0, 0], 9: [200, 100, 100], 10: [10, 200, 100], 11: [200, 200, 200], 
                  12: [50, 50, 50]}
-app = Flask(__name__)
 model = get_model(13)
 checkpoint = torch.load('models/best_model.pth', map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
-
-ALLOWED_EXTENSIONS = {'npy', 'pcd'}
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def add_vote(vote_label_pool, point_idx, pred_label, weight):
+def add_vote(vote_label_pool, point_idx, pred_label, weight):       # helper function for predictions
     B = pred_label.shape[0]
     N = pred_label.shape[1]
     for b in range(B):
@@ -31,16 +24,8 @@ def add_vote(vote_label_pool, point_idx, pred_label, weight):
             if weight[b, n] != 0 and not np.isinf(weight[b, n]):
                 vote_label_pool[int(point_idx[b, n]), int(pred_label[b, n])] += 1
     return vote_label_pool
-    
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-if not os.path.exists(UPLOAD_FOLDER):
-   os.makedirs(UPLOAD_FOLDER)
-
-output_path = 'predictions/'
-
-def to_pcd(ip_file):
+def to_pcd(ip_file):                                                # helper function for predictions
     if ip_file.split('.')[-1] == 'pcd':
         return ip_file
     output_file = ip_file.split('.')[0] + '.pcd'    
@@ -52,10 +37,12 @@ def to_pcd(ip_file):
     op.points = o3d.utility.Vector3dVector(points[:, :3])
     op.colors = o3d.utility.Vector3dVector(points[:, -3:])
     o3d.io.write_point_cloud(output_file, op)
-    return output_file
-        
+    return output_file        
 
-def classify(img, num_point = 4096, num_votes = 5):
+def classify(img, num_point = 4096, num_votes = 5):                 # Classification function.
+    filename = 'static/output/'+img.filename.split('.')[0]+'.pcd'
+    if os.path.exists(filename):
+        return filename
     data = DataLoader([img])
     for batch_idx in range(len(data)):
         whole_scene_data = data.scene_points_list[batch_idx]
@@ -86,60 +73,69 @@ def classify(img, num_point = 4096, num_votes = 5):
                     batch_pred_label = seg_pred.contiguous().data.max(2)[1].numpy()
                     vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...], batch_pred_label[0:real_batch_size, ...], batch_smpw[0:real_batch_size, ...])
         pred_label = np.argmax(vote_label_pool, 1)
-        postfix = 0
-        for file in os.listdir('predictions/'):
-            num = int(file.split('_')[1].split('.')[0])
-            if num>postfix:
-                postfix = num
-        postfix += 1
-        filename = 'predictions/output_{}.txt'.format(postfix)
+        
+        # filename = 'static/output/{}.txt'.format(img.filename.split('.')[0])
         with open(filename, 'w') as f:
             for i in range(len(whole_scene_label)):
                 color = g_class2color[pred_label[i]]
                 f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
-    result = to_pcd(filename)
-    return result
+
+    return filename
+
+app = Flask(__name__, static_url_path='/static')                    # Flask App.
+UPLOAD_FOLDER = 'static/input'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+ALLOWED_EXTENSIONS = {'npy', 'pcd'}
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+if not os.path.exists(UPLOAD_FOLDER):
+   os.makedirs(UPLOAD_FOLDER)
 
 @app.route('/', methods=['GET'])
 def index():
     return render_template('Home.html')
 
 @app.route('/predict', methods=['POST', 'GET'])
-def predict():
+def predict():                                                      # Predict route
     if request.method == 'POST':    
     
         file = request.files['file']
-        print(file)
-        print("file name "+file.filename)
         result = classify(file, num_votes=1)
-        return render_template('pcd.html', file_name = result)
+        path_name = to_pcd(result)
+        file_name = path_name.split('/')[-1]
+        return render_template('pcd.html', file_name = file_name, path_name = path_name)
+    
     else:
         return jsonify([]), 404
 
-
-
 @app.route('/upload', methods=['POST'])
-def upload_file():
-
+def upload_file():                                                  # Upload route
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
 
     file = request.files['file']
-    print('Uploading')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
     if file:
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filename)
-        return jsonify(success=True, message="Point cloud processed successfully", output_path=output_path)
+        return jsonify(success=True, message="Point cloud processed successfully", output_path='static/input/')
 
 
-@app.route('/page', methods=['GET','POST'])
+@app.route('/visualize', methods=['POST'])
 def visualize():
-    file_name = 'uploads/Area_1_copyRoom_1.pcd'
-    print(file_name)
-    return render_template('pcd.html', file_name=file_name)
+    if request.method == 'POST':
+        file = request.files['file']
+        path_name = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        path_name = to_pcd(path_name)
+        file_name = path_name.split('/')[-1]
+        return render_template('pcd.html', file_name = file_name, path_name = path_name)
+    else:
+        return jsonify([]), 404
 
 if __name__=="__main__":
     app.run(debug=True)

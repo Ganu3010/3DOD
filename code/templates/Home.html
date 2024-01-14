@@ -30,9 +30,6 @@
       </div>    
 </body>
 <script>
-  function testing(){
-    fetch('')
-  }
   function upload(){
 
     document.getElementById('first').addEventListener('click', function () {
@@ -78,7 +75,9 @@
           return response.text();
         })
         .then(result => {
-          console.log(result);
+          document.open();
+          document.write(result);
+          document.close();
         })
         .catch(error => {
           console.error('Error during file upload:', error);
@@ -91,7 +90,7 @@
       var fileInput = document.getElementById('fileInput');
       var formData = new FormData()
       formData.append('file', fileInput.files[0])
-      fetch('/page', {
+      fetch('/visualize', {
         method: 'POST',
         body: formData
       })
@@ -114,93 +113,3 @@
   
 </script>
 </html>
-
-
-<!-- import React, { useState } from "react";
-import "../src/App.css";
-import VisualizeButton from "./button";
-import axios from "axios";
-
-function Home() {
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
-
-  const handleUpload = async () => {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error uploading file: ", error);
-    }
-  };
-
-  const predict = async () => {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/predict",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error uploading file: ", error);
-    }
-  };
-  const [showComponent, setShowComponent] = useState(false);
-
-  const handleButtonClick = () => {
-    setShowComponent(true);
-  };
-  return (
-    <div>
-      <br></br>
-      <br></br>
-      <br></br>
-      <br></br>
-      <h3 align="center">Model input</h3>
-      {/* <form className="form"> */}
-      <div className="form">
-        <input type="file" onChange={handleFileChange} />
-        <div>
-          <button className="btn" onClick={handleUpload}>
-            Upload
-          </button>
-          <button className="btn" onClick={predict}>
-            Predict
-          </button>
-          <button className="btn" onClick={handleButtonClick}>
-            Visualize
-          </button>
-          {/* {showComponent && VisualizeButton} */}
-        </div>
-        <VisualizeButton></VisualizeButton>
-      </div>
-
-      {/* </form> */}
-    </div >
-  );
-}
-export default Home; -->

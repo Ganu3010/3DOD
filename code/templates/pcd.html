@@ -21,22 +21,13 @@
 
 		<script>
 			const file_name = '{{ file_name }}';
-			const dynamicFileName = `../${file_name}`;
+			const path_name = '{{ path_name }}'
+			const dynamicFileName = `../${path_name}`;
 		</script>
 		
 	</head>
 	<body>
-		<!-- <div id="div1">
-			<p id="p1">This is a paragraph.</p>
-			<p id="p2">This is another paragraph.</p>
-		  </div> -->
 		<script type="module">
-			// const para = document.createElement("p");
-			// const node = document.createTextNode(dynamicFileName);
-			// para.appendChild(node);
-
-			// const element = document.getElementById("div1");
-			// element.appendChild(para);
 			import * as THREE from 'https://threejs.org/build/three.module.js'; 
 			import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
 			import { PCDLoader } from 'https://threejs.org/examples/jsm/loaders/PCDLoader.js';
@@ -65,7 +56,7 @@
 				controls.addEventListener( 'change', render ); // use if there is no animation loop
 				controls.minDistance = 0.5;
 				controls.maxDistance = 10;
-
+				
 				//scene.add( new THREE.AxesHelper( 1 ) );
 
 				const loader = new PCDLoader();
@@ -73,9 +64,8 @@
 
 					points.geometry.center();
 					points.geometry.rotateX( Math.PI );
+					points.name = file_name
 					scene.add( points );
-
-					//
 
 					const gui = new GUI();
 

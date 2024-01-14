@@ -13,7 +13,7 @@ class DataLoader():
         self.semantic_labels_list = []
         self.room_coord_min, self.room_coord_max = [], []
         for file in files:
-            print(file) 
+            print(file)
             data = np.load(file)
             points = data[:, :3]
             self.scene_points_list.append(data[:, :6])
