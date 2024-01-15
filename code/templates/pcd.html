@@ -43,7 +43,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.setSize( 1000,1000);
+				// renderer.setSize( 1000,1000);
 				document.body.appendChild( renderer.domElement );
 
 				scene = new THREE.Scene();
@@ -64,7 +64,7 @@
 
 					points.geometry.center();
 					points.geometry.rotateX( Math.PI );
-					points.name = file_name
+					points.name = file_name;
 					scene.add( points );
 
 					const gui = new GUI();
