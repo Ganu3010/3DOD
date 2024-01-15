@@ -43,6 +43,8 @@ def classify(img, num_point = 4096, num_votes = 5):                 # Classifica
     filename = 'static/output/'+img.filename.split('.')[0]+'.pcd'
     if os.path.exists(filename):
         return filename
+    else: 
+        filename = filename.split('.')[0]+'.txt'
     data = DataLoader([img])
     for batch_idx in range(len(data)):
         whole_scene_data = data.scene_points_list[batch_idx]
@@ -74,11 +76,10 @@ def classify(img, num_point = 4096, num_votes = 5):                 # Classifica
                     vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...], batch_pred_label[0:real_batch_size, ...], batch_smpw[0:real_batch_size, ...])
         pred_label = np.argmax(vote_label_pool, 1)
         
-        # filename = 'static/output/{}.txt'.format(img.filename.split('.')[0])
-        with open(filename, 'w') as f:
-            for i in range(len(whole_scene_label)):
-                color = g_class2color[pred_label[i]]
-                f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
+    with open(filename, 'w') as f:
+        for i in range(len(whole_scene_label)):
+            color = g_class2color[pred_label[i]]
+            f.write('{} {} {} {} {} {} \n'.format(whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1], color[2]))
 
     return filename
 
