@@ -40,7 +40,7 @@ def to_pcd(ip_file):                                                # helper fun
     return output_file        
 
 def classify(img, num_point = 4096, num_votes = 5):                 # Classification function.
-    filename = 'static/output/'+img.filename.split('.')[0]+'.pcd'
+    filename = 'static/input/'+img.filename.split('.')[0]+'.pcd'
     if os.path.exists(filename):
         return filename
     else: 
@@ -84,7 +84,7 @@ def classify(img, num_point = 4096, num_votes = 5):                 # Classifica
     return filename
 
 app = Flask(__name__, static_url_path='/static')                    # Flask App.
-UPLOAD_FOLDER = 'static/input'
+UPLOAD_FOLDER = 'static/input/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {'npy', 'pcd'}
@@ -102,11 +102,11 @@ def index():
 @app.route('/predict', methods=['POST', 'GET'])
 def predict():                                                      # Predict route
     if request.method == 'POST':    
-    
         file = request.files['file']
         result = classify(file, num_votes=1)
         path_name = to_pcd(result)
         file_name = path_name.split('/')[-1]
+        file.save('static/output/'+file_name)
         return render_template('pcd.html', file_name = file_name, path_name = path_name)
     
     else:
