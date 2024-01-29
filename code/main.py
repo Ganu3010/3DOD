@@ -129,14 +129,20 @@ def upload_file():                                                  # Upload rou
 
 @app.route('/visualize', methods=['POST'])
 def visualize():
-    if request.method == 'POST':
-        file = request.files['file']
-        path_name = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        path_name = to_pcd(path_name)
-        file_name = path_name.split('/')[-1]
-        return render_template('pcd.html', file_name = file_name, path_name = path_name)
-    else:
-        return jsonify([]), 404
+    # if request.method == 'POST':
+    #     file = request.files['file']
+    #     path_name = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    #     path_name = to_pcd(path_name)
+    #     file_name = path_name.split('/')[-1]
+    #     return render_template('pcd.html', file_name = file_name, path_name = path_name)
+    # else:
+    #     return jsonify([]), 404
+    o3d.visualization.webrtc_server.enable_webrtc()
+
+    point_cloud = o3d.io.read_point_cloud('../static/input/Area_1_hallway_4.pcd')
+
+    o3d.visualization.draw_geometries([point_cloud])
+
 
 if __name__=="__main__":
     app.run(debug=True)
