@@ -1,0 +1,13 @@
+*.pyc
+__pycache__/
+.vscode/
+
+instance
+
+website/static/input
+website/static/output
+website/static/preprocessed
+
+SPFormer/docs
+SPFormer/checkpoints
+SPFormer/segmentator

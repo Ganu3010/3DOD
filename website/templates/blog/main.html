@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+<div class="container">
+    <h2>{% block title %}Upload{% endblock %}</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <br />
+    {% if g.user %}
+    <div class="container">
+        <h3 align="center">Upload Point Cloud</h3>
+        <br />
+
+        <div class="container">
+            <form class="d-grid gap-3" method="post" action="/" enctype="multipart/form-data">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input class="form-control" type="file" name="file" id="fileInput"
+                                accept=".pcd, .npy, .txt, .pth, .ply">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <button class="btn btn-dark" id="upload" type="submit" value="upload"> Upload </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="container">
+        <h4> Please Login or Register to access this page! </h4>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
