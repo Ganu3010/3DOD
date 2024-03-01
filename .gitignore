@@ -11,3 +11,5 @@ website/static/output/*/*
 SPFormer/docs
 SPFormer/checkpoints
 SPFormer/segmentator
+
+*.ipynb

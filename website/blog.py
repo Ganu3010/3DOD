@@ -93,8 +93,13 @@ def visualize():
     if request.args.get('output'):
         filepath = os.path.join('/', *app.config['UPLOAD_FOLDER'].split('/')[:-1], 'output', request.args.get('filename'), 'output.ply')
     else:
-        # TODO: File format conversion in o3d
         filepath = os.path.join('/', app.config['UPLOAD_FOLDER'], request.args.get('filename'))
+    
+    if filepath.endswith('.pth'):
+        # TODO: Add support for .pth visualization
+        flash('.pth not supported for visualization yet!')
+    elif filepath.endswith(('.txt', '.npy')):
+        filepath = utils.to_pcd(filepath)
     
     point_cloud = o3d.io.read_point_cloud(filepath)
     aabb = point_cloud.get_axis_aligned_bounding_box()
