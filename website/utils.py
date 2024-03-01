@@ -92,7 +92,19 @@ def preprocess(filepath, model, dataset):
     Only works with .ply files for now.
     If .pth file, returns filepath of the same as it is already processed.
     '''
-    
+    def to_pcd(ip_file):                                                # helper function for predictions
+        if ip_file.split('.')[-1] == 'pcd':
+            return ip_file
+        output_file = ip_file.split('.')[0] + '.pcd'    
+        points = np.loadtxt(ip_file) if ip_file.split('.')[-1] == 'txt' else np.load(ip_file)
+        op = o3d.geometry.PointCloud()
+        points[:, -3:] /= 255
+        xyz_min = np.amin(points, axis=0)[:3]
+        points[:, :3] -= xyz_min
+        op.points = o3d.utility.Vector3dVector(points[:, :3])
+        op.colors = o3d.utility.Vector3dVector(points[:, -3:])
+        o3d.io.write_point_cloud(output_file, op)
+        return output_file
     if model == 'spformer' and dataset == 'scannetv2':
         if filepath.endswith('.pth'):
             return filepath
@@ -103,7 +115,11 @@ def preprocess(filepath, model, dataset):
 
         if not filepath.endswith('.ply'):
             # TODO: o3d conversion between formats
-            pass
+            pcd_file = to_pcd(filepath)
+            pcd = o3d.io.read_point_cloud(pcd_file)
+            o3d.io.write_point_cloud(pcd_file.split('.')[0]+'.ply', pcd)
+            filepath = pcd_file.split('.')[0]+'.ply'
+            
 
         file = plyfile.PlyData.read(filepath)
         points = np.array([list(x) for x in file.elements[0]])
