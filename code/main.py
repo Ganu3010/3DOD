@@ -37,10 +37,10 @@ def to_pcd(ip_file):                                                # helper fun
     op.points = o3d.utility.Vector3dVector(points[:, :3])
     op.colors = o3d.utility.Vector3dVector(points[:, -3:])
     o3d.io.write_point_cloud(output_file, op)
-    return output_file        
+    return output_file
 
-def classify(img, num_point = 4096, num_votes = 5):                 # Classification function.
-    filename = 'static/input/'+img.filename.split('.')[0]+'.pcd'
+def classify(img, num_point = 4096, num_votes = 5, output_path = 'static/output/'):                 # Classification function.
+    filename = output_path + img.filename.split('.')[0] +'.pcd'
     if os.path.exists(filename):
         return filename
     else: 
@@ -106,9 +106,7 @@ def predict():                                                      # Predict ro
         result = classify(file, num_votes=1)
         path_name = to_pcd(result)
         file_name = path_name.split('/')[-1]
-        file.save('static/output/'+file_name)
-        return render_template('pcd.html', file_name = file_name, path_name = path_name)
-    
+        return render_template('pcd.html', file_name = file_name, path_name = path_name)   
     else:
         return jsonify([]), 404
 
@@ -139,4 +137,4 @@ def visualize():
         return jsonify([]), 404
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run()
