@@ -30,6 +30,7 @@ def create_app(test_config=None):
 
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     
+    # Initialize open3d webserver for visualization
     o3d.visualization.webrtc_server.enable_webrtc()
 
     from . import db

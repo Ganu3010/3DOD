@@ -24,6 +24,12 @@ def allowed_file(filename):
 
 @bp.route('/', methods=('GET', 'POST'))
 def index():
+    '''
+    Homepage of the website. File upload happens here.
+    File upload only possible if user is logged in.
+    Redirects to /process?filename=name after successful upload.
+    '''
+    
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('File not detected!')
@@ -46,21 +52,28 @@ def index():
 @bp.route('/process', methods=('GET', 'POST'))
 @login_required
 def process():
+    '''
+    This page decides the model and dataset to use.
+    Requires the filename to be passed from the homepage.
+    Redirects to /visualize?filename=name after successful processing.
+    '''
+    
     if request.method == 'POST':
         app = current_app
+        
         filename = request.args.get('filename')
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
         if os.path.isfile(filepath):
             if request.form['dataset'] == 'scannetv2' and request.form['model'] == 'spformer':
-                preprocessed_file = utils.preprocess(
-                    filepath, 'spformer', 'scannetv2')
-                processed_ply = utils.process(
-                    preprocessed_file, 'spformer', 'scannetv2')
+                preprocessed_file = utils.preprocess(filepath, 'spformer', 'scannetv2')
+                processed_ply = utils.process(preprocessed_file, 'spformer', 'scannetv2')
+                
                 return redirect(url_for('blog.visualize', output=True, filename=processed_ply.split('/')[-1]))
-            elif request.form['dataset'] == 's3dis' and request.form['model'] == 'pnpp':
-                flash("Not implemented yet!")
+            
             else:
                 flash("Not implemented yet!")
+        
         else:
             flash("File does not exist!")
 
@@ -70,11 +83,17 @@ def process():
 @bp.route('/visualize', methods=('GET',))
 @login_required
 def visualize():
+    '''
+    Page for visualization of point cloud.
+    Requires the filename to be passed from /process.
+    Redirects to homepage after closing open3d window.
+    '''
+    
     app = current_app
     if request.args.get('output'):
         filepath = os.path.join('/', *app.config['UPLOAD_FOLDER'].split('/')[:-1], 'output', request.args.get('filename'), 'output.ply')
     else:
-        # TODO: File format conversion
+        # TODO: File format conversion in o3d
         filepath = os.path.join('/', app.config['UPLOAD_FOLDER'], request.args.get('filename'))
     
     point_cloud = o3d.io.read_point_cloud(filepath)

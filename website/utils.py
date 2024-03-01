@@ -1,7 +1,6 @@
 import os
 
 import torch
-import plyfile
 import gorilla
 import numpy as np
 import open3d as o3d
@@ -88,16 +87,24 @@ COLOR_DETECTRON2 = np.array(
 
 
 def preprocess(filepath, model, dataset):
+    '''
+    Preprocesses point cloud files to .pth files compatible with SPFormer.
+    Only works with .ply files for now.
+    If .pth file, returns filepath of the same as it is already processed.
+    '''
+    
     if model == 'spformer' and dataset == 'scannetv2':
         if filepath.endswith('.pth'):
             return filepath
 
+
+        import plyfile
         import segmentator
 
         if not filepath.endswith('.ply'):
             # TODO: o3d conversion between formats
             pass
-        
+
         file = plyfile.PlyData.read(filepath)
         points = np.array([list(x) for x in file.elements[0]])
         coords = np.ascontiguousarray(points[:, :3] - points[:, :3].mean(0))
@@ -115,11 +122,19 @@ def preprocess(filepath, model, dataset):
 
 
 def process(save_path, model, dataset):
+    '''
+    Processes .pth files and saves predicted instances to static/output/filename/pred_instances
+    Also saves output to static/output/filename.ply
+    If static/output/filename/pred_instances exists, skips prediction.
+    website/SPFormer/configs and website/SPFormer/checkpoints dirs are needed for processing.
+    '''
+    
     if model == 'spformer' and dataset == 'scannetv2':
         output = os.path.join('/',
                               *save_path.split('/')[:-2], 'output', save_path.split('/')[-1].split('.')[0])
         if os.path.isdir(os.path.join(output, 'pred_instances')):
             return output
+
 
         from .SPFormer.spformer.model import SPFormer
         from .SPFormer.spformer.dataset import build_dataloader, build_dataset
@@ -129,7 +144,7 @@ def process(save_path, model, dataset):
         checkpoint = './website/SPFormer/checkpoints/spf_scannet_512.pth'
 
         cfg = gorilla.Config.fromfile(config)
-        
+
         cfg.data.test.prefix = 'preprocessed'
         cfg.data.test.suffix = save_path.split('/')[-1]
         cfg.data.test.data_root = os.path.join('/', *save_path.split('/')[:-2])
@@ -144,7 +159,7 @@ def process(save_path, model, dataset):
         dataloader = build_dataloader(
             dataset, training=False, **cfg.dataloader.test)
 
-        results, scan_ids, pred_insts, gt_insts = [], [], [], []
+        results, scan_ids, pred_insts = [], [], []
 
         progress_bar = tqdm(total=len(dataloader))
         with torch.no_grad():
@@ -173,6 +188,11 @@ def process(save_path, model, dataset):
 
 
 def get_coords_color(output):
+    '''
+    Helper function from SPFormer/tools/visualize.py
+    Modified to work without validation labels.
+    '''
+    
     file = os.path.join('/', *output.split('/')
                         [:-2], 'preprocessed', output.split('/')[-1] + '.pth')
     xyz, rgb, superpoint = torch.load(file)
@@ -209,6 +229,10 @@ def get_coords_color(output):
 
 
 def write_ply(verts, colors, indices, output_file):
+    '''
+    Helper function taken directly from SPFormer/tools/visualize.py
+    '''
+    
     if colors is None:
         colors = np.zeros_like(verts)
     if indices is None:

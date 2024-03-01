@@ -4,9 +4,9 @@ __pycache__/
 
 instance
 
-website/static/input
-website/static/output
-website/static/preprocessed
+# website/static/input/*
+website/static/output/*/*
+# website/static/preprocessed/*
 
 SPFormer/docs
 SPFormer/checkpoints
