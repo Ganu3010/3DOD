@@ -106,7 +106,17 @@ def predict():                                                      # Predict ro
         result = classify(file, num_votes=1)
         path_name = to_pcd(result)
         file_name = path_name.split('/')[-1]
-        return render_template('pcd.html', file_name = file_name, path_name = path_name)   
+
+        o3d.visualization.webrtc_server.enable_webrtc()
+        point_cloud = o3d.io.read_point_cloud(path_name)
+        # Compute the axis-aligned bounding box (AABB) of the point cloud
+        aabb = point_cloud.get_axis_aligned_bounding_box()
+        min_bound = aabb.get_min_bound()
+        max_bound = aabb.get_max_bound()
+        file.save('static/output/'+file_name)
+        o3d.visualization.draw_geometries([point_cloud, aabb])
+        # return render_template('pcd.html', file_name = file_name, path_name = path_name)
+    
     else:
         return jsonify([]), 404
 
@@ -132,9 +142,19 @@ def visualize():
         path_name = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         path_name = to_pcd(path_name)
         file_name = path_name.split('/')[-1]
-        return render_template('pcd.html', file_name = file_name, path_name = path_name)
+
+        o3d.visualization.webrtc_server.enable_webrtc()
+        point_cloud = o3d.io.read_point_cloud(path_name)
+        # Compute the axis-aligned bounding box (AABB) of the point cloud
+        aabb = point_cloud.get_axis_aligned_bounding_box()
+        min_bound = aabb.get_min_bound()
+        max_bound = aabb.get_max_bound()
+        o3d.visualization.draw_geometries([point_cloud, aabb])
+        # return render_template('pcd.html', file_name = file_name, path_name = path_name)
     else:
         return jsonify([]), 404
+    
 
+ 
 if __name__=="__main__":
     app.run()
