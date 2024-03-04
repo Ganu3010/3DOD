@@ -5,7 +5,7 @@ __pycache__/
 instance
 
 # website/static/input/*
-website/static/output/*/*
+# website/static/output/*/*
 # website/static/preprocessed/*
 
 SPFormer/docs

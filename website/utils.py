@@ -261,7 +261,7 @@ def write_ply(verts, colors, indices, output_file):
         indices = []
 
     file = open(output_file, 'w')
-    file.write('ply \n')
+    file.write('ply\n')
     file.write('format ascii 1.0\n')
     file.write('element vertex {:d}\n'.format(len(verts)))
     file.write('property float x\n')
