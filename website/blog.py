@@ -10,6 +10,7 @@ from werkzeug.exceptions import abort
 from website.auth import login_required
 from werkzeug.utils import secure_filename
 
+
 from . import utils
 
 ALLOWED_EXTENSIONS = {'txt', 'npy', 'pcd', 'pth', 'ply'}
@@ -60,17 +61,27 @@ def process():
     
     if request.method == 'POST':
         app = current_app
-        
+        db=get_db()
         filename = request.args.get('filename')
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
         if os.path.isfile(filepath):
             if request.form['dataset'] == 'scannetv2' and request.form['model'] == 'spformer':
-                preprocessed_file = utils.preprocess(filepath, 'spformer', 'scannetv2')
-                processed_ply = utils.process(preprocessed_file, 'spformer', 'scannetv2')
                 
-                return redirect(url_for('blog.visualize', output=True, filename=processed_ply.split('/')[-1]))
-            
+                # preprocessed_file = utils.preprocess(filepath, 'spformer', 'scannetv2')
+                # processed_ply = utils.process(preprocessed_file, 'spformer', 'scannetv2')
+
+                # saving in table-> experiments
+                #TO-DO change preprocessed and processed filepath while saving in db
+                db.execute(
+                    "INSERT INTO experiments (input_file_path,preprocessed_file_path,output_file_path,dataset,model) VALUES (?, ?, ?, ?, ?)",
+                    (filepath,filepath,filepath,request.form['dataset'],request.form['model']),
+                )
+                db.commit()
+
+                # return redirect(url_for('blog.visualize', output=True, filename=processed_ply.split('/')[-1]))
+                
+        
             else:
                 flash("Not implemented yet!")
         
@@ -102,3 +113,19 @@ def visualize():
     o3d.visualization.draw_geometries([point_cloud, aabb])
     
     return redirect(url_for('blog.index'))
+
+    
+
+@bp.route('/list', methods=('GET',))
+@login_required
+def list():
+    app = current_app
+    db=get_db()
+    cursor = db.cursor()
+
+    cursor.execute('SELECT * FROM experiments')
+    rows = cursor.fetchall()
+
+    return render_template('blog/list.html', items=rows)
+
+                

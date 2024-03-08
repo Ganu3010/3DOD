@@ -77,8 +77,11 @@
                     <div class="col-md-1">
                         <a href="{{ url_for('blog.visualize', filename=filename) }}" class="btn btn-dark" role="button">Visualize</a>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-1">
                         <button type="submit" class="btn btn-dark" id="predict" value="predict">Predict</button>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('blog.list')}}" class="btn btn-dark" role="button">list</a>
                     </div>
                     <div class="col-md-1">
                         <button class="btn btn-dark" id="export" value="export" disabled>Export</button>
