@@ -81,10 +81,10 @@
                         <button type="submit" class="btn btn-dark" id="predict" value="predict">Predict</button>
                     </div>
                     <div class="col-md-4">
-                        <a href="{{ url_for('blog.list')}}" class="btn btn-dark" role="button">list</a>
+                        <a href="{{ url_for('blog.list')}}" class="btn btn-dark" role="button">List</a>
                     </div>
                     <div class="col-md-1">
-                        <button class="btn btn-dark" id="export" value="export" disabled>Export</button>
+                        <a href="{{ url_for('blog.export')}}" class="btn btn-dark" role="button">Export</a>
                     </div>
                 </div>
             </form>

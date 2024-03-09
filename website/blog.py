@@ -3,7 +3,7 @@ import os
 import open3d as o3d
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, current_app
+    Blueprint, flash, g, redirect, render_template, request, url_for, current_app,send_file
 )
 from website.db import get_db
 from werkzeug.exceptions import abort
@@ -60,7 +60,7 @@ def process():
     '''
     
     if request.method == 'POST':
-        app = current_app
+        
         db=get_db()
         filename = request.args.get('filename')
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -132,5 +132,26 @@ def list():
     rows = cursor.fetchall()
 
     return render_template('blog/list.html', items=rows)
+
+
+
+@bp.route('/export', methods=('GET',))
+@login_required
+def export():
+    
+    app = current_app
+    my_array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14]
+    
+    filepath=os.path.join(app.config['UPLOAD_FOLDER'])
+    output_path = filepath.replace('input', 'bounding_boxes')
+    output_file=os.path.join(output_path,'bb.txt')
+
+    f = open(output_file, "w")
+    for item in my_array:
+        f.write(str(item) + '\n')
+       
+    f.close()
+
+    return send_file(output_file, as_attachment=True)
 
                 
