@@ -2,11 +2,19 @@
 __pycache__/
 .vscode/
 
-instance
+# instance
 
-# website/static/input/*
-# website/static/output/*/*
-# website/static/preprocessed/*
+website/static/input/*
+!website/static/input/scene0000_00_vh_clean_2.ply
+
+website/static/output/*
+!website/static/output/scene0000_00_vh_clean_2/*
+
+website/static/preprocessed/*
+!website/static/preprocessed/scene0000_00_vh_clean_2.pth
+
+website/static/bounding_boxes/*/*
+!website/static/bounding_boxes/scene0000_00_vh_clean_2/*
 
 SPFormer/docs
 SPFormer/checkpoints

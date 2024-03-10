@@ -1,4 +1,4 @@
-ply 
+ply
 format ascii 1.0
 element vertex 81369
 property float x

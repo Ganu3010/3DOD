@@ -3,9 +3,11 @@ import os
 import open3d as o3d
 from flask import Flask
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), 'static', 'input')
+ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+UPLOAD_FOLDER = os.path.join(ROOT_FOLDER, 'static', 'input')
 
+print(f"{ROOT_FOLDER =}")
+print(f"{UPLOAD_FOLDER =}")
 
 def create_app(test_config=None):
     # create and configure the app
@@ -28,6 +30,7 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    app.config['ROOT_FOLDER'] = ROOT_FOLDER
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     
     # Initialize open3d webserver for visualization

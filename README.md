@@ -12,19 +12,18 @@ flask --app website run --debug
 
 ### TODO
 <ol>
-    <li>Add txt, npy, pcd file compatibility in visualize and predict</li>
     <li>Display bounding boxes around visualized object instances</li>
-    <li>Display Open3D visualization in same window as website</li>
+    <li><s>Display Open3D visualization in same window as website</s> Look for alternatives to Open3D</li>
     <li>Add Export functionality to export predicted bounding boxes</li>
-    <li>Create DB to track experiments and point cloud files</li>
-    <li>Create page for above DB to easily visualize past experiments and edit if necessary</li>
+    <li>Create page for Experiments DB to easily visualize, edit, delete past experiments</li>
 </ol>
 
 ### Installation
 <ol>
     <li>Flask</li>
-    <li>Refer to spookywooky5/SPFormer ro install dependencies </li>
-    <li>To install SPFormer/segmentator, change:
+    <li>Refer to spookywooky5/SPFormer to install dependencies </li>
+    <li>
+    To install SPFormer/segmentator, change:
     ```
     set(CMAKE_CXX_STANDARD 14)
     ```

@@ -4,7 +4,9 @@ import torch
 import gorilla
 import numpy as np
 import open3d as o3d
+
 from tqdm import tqdm
+from flask import current_app
 
 
 COLOR_DETECTRON2 = np.array(
@@ -91,7 +93,7 @@ def to_pcd(ip_file):
         return ip_file
     
     output_file = ip_file.split('.')[0] + '.pcd'
-    points = np.loadtxt(ip_file) if ip_file.split('.')[-1] == 'txt' else np.load(ip_file)
+    points = np.loadtxt(ip_file) if ip_file.endswith('txt') else np.load(ip_file)
     
     # TODO: Verify if we really need to do this.
     points[:, -3:] /= 255
@@ -125,9 +127,9 @@ def preprocess(filepath, model, dataset):
             pcd = o3d.io.read_point_cloud(pcd_file)
             o3d.io.write_point_cloud(pcd_file.split('.')[0]+'.ply', pcd)
             filepath = pcd_file.split('.')[0]+'.ply'
-            
 
-        file = plyfile.PlyData.read(filepath)
+            
+        file = plyfile.PlyData.read(filepath)                
         points = np.array([list(x) for x in file.elements[0]])
         coords = np.ascontiguousarray(points[:, :3] - points[:, :3].mean(0))
         colors = np.ascontiguousarray(points[:, 3:6]) / 127.5 - 1
@@ -137,8 +139,8 @@ def preprocess(filepath, model, dataset):
         faces = torch.from_numpy(np.array(mesh.triangles).astype(np.int64))
         superpoint = segmentator.segment_mesh(vertices, faces).numpy()
 
-        save_path = os.path.join('/', *filepath.split(
-            '/')[:-2], 'preprocessed', filepath.split('/')[-1].split('.')[0] + '.pth')
+        filepath, filename = os.path.split(filepath)
+        save_path = os.path.join(filepath.replace('input', 'preprocessed'), filename.split('.')[0] + '.pth')
         torch.save((coords, colors, superpoint), save_path)
         return save_path
 
@@ -150,10 +152,11 @@ def process(save_path, model, dataset):
     If static/output/filename/pred_instances exists, skips prediction.
     website/SPFormer/configs and website/SPFormer/checkpoints dirs are needed for processing.
     '''
-    
+    app = current_app
     if model == 'spformer' and dataset == 'scannetv2':
-        output = os.path.join('/',
-                              *save_path.split('/')[:-2], 'output', save_path.split('/')[-1].split('.')[0])
+        output = os.path.join(app.config['ROOT_FOLDER'], 'static', 'output', save_path.split('.')[0])
+        
+        # TODO: Check if this works as intended
         if os.path.isdir(os.path.join(output, 'pred_instances')):
             return output
 
@@ -162,14 +165,15 @@ def process(save_path, model, dataset):
         from .SPFormer.spformer.dataset import build_dataloader, build_dataset
         from .SPFormer.spformer.utils import get_root_logger, save_pred_instances
 
-        config = './website/SPFormer/configs/spf_scannet.yaml'
-        checkpoint = './website/SPFormer/checkpoints/spf_scannet_512.pth'
+        spformer_root = os.path.join(app.config['ROOT_FOLDER'], 'SPFormer')
+        config = os.path.join(spformer_root, 'configs', 'spf_scannet.yaml')
+        checkpoint = os.path.join(spformer_root, 'checkpoints', 'spf_scannet_512.pth')
 
         cfg = gorilla.Config.fromfile(config)
 
         cfg.data.test.prefix = 'preprocessed'
-        cfg.data.test.suffix = save_path.split('/')[-1]
-        cfg.data.test.data_root = os.path.join('/', *save_path.split('/')[:-2])
+        cfg.data.test.suffix = save_path
+        cfg.data.test.data_root = os.path.split(app.config['UPLOAD_FOLDER'])[0]
 
         gorilla.set_random_seed(cfg.test.seed)
         logger = get_root_logger()
@@ -214,9 +218,9 @@ def get_coords_color(output):
     Helper function from SPFormer/tools/visualize.py
     Modified to work without validation labels.
     '''
+    app = current_app
+    file = os.path.join(app.config['ROOT_FOLDER'], 'static', 'preprocessed', os.path.split(output)[-1].split('.')[0] + '.pth')
     
-    file = os.path.join('/', *output.split('/')
-                        [:-2], 'preprocessed', output.split('/')[-1] + '.pth')
     xyz, rgb, superpoint = torch.load(file)
     rgb = (rgb + 1) * 127.5
 
@@ -261,8 +265,8 @@ def write_ply(verts, colors, indices, output_file):
         indices = []
 
     file = open(output_file, 'w')
-    file.write('ply\n')
-    file.write('format ascii 1.0\n')
+    file.write('ply')
+    file.write('\nformat ascii 1.0\n')
     file.write('element vertex {:d}\n'.format(len(verts)))
     file.write('property float x\n')
     file.write('property float y\n')

@@ -3,7 +3,7 @@ import os
 import open3d as o3d
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, current_app,send_file
+    Blueprint, flash, g, redirect, render_template, request, url_for, current_app, send_file
 )
 from website.db import get_db
 from werkzeug.exceptions import abort
@@ -60,28 +60,38 @@ def process():
     '''
     
     if request.method == 'POST':
-        
-        db=get_db()
+        db = get_db()
+        app = current_app
         filename = request.args.get('filename')
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
         if os.path.isfile(filepath):
             if request.form['dataset'] == 'scannetv2' and request.form['model'] == 'spformer':
                 
-                # preprocessed_file = utils.preprocess(filepath, 'spformer', 'scannetv2')
-                # processed_ply = utils.process(preprocessed_file, 'spformer', 'scannetv2')
+                preprocessed_file = os.path.split(utils.preprocess(filepath, 'spformer', 'scannetv2'))[-1]
+                processed_ply = os.path.split(utils.process(preprocessed_file, 'spformer', 'scannetv2'))[-1]
 
-                # saving in table-> experiments
-                #TO-DO change preprocessed and processed filepath while saving in db
                 db.execute(
-                    "INSERT INTO experiments (input_file_path,preprocessed_file_path,output_file_path,dataset,model) VALUES (?, ?, ?, ?, ?)",
-                    (filepath,filepath,filepath,request.form['dataset'],request.form['model']),
+                    """
+                    INSERT INTO experiments (
+                        input_file_path,
+                        preprocessed_file_path,
+                        output_file_path,
+                        dataset,
+                        model
+                    ) VALUES (?, ?, ?, ?, ?)
+                    """, (
+                        os.path.split(filepath)[-1],
+                        preprocessed_file,
+                        processed_ply,
+                        request.form['dataset'],
+                        request.form['model']
+                     ),
                 )
                 db.commit()
 
-                # return redirect(url_for('blog.visualize', output=True, filename=processed_ply.split('/')[-1]))
-                
-        
+                return redirect(url_for('blog.visualize', output=True, filename=processed_ply))
+
             else:
                 flash("Not implemented yet!")
         
@@ -102,9 +112,9 @@ def visualize():
     
     app = current_app
     if request.args.get('output'):
-        filepath = os.path.join('/', *app.config['UPLOAD_FOLDER'].split('/')[:-1], 'output', request.args.get('filename'), 'output.ply')
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'].replace('input', 'output'), request.args.get('filename'), 'output.ply')
     else:
-        filepath = os.path.join('/', app.config['UPLOAD_FOLDER'], request.args.get('filename'))
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], request.args.get('filename'))
     
     if filepath.endswith('.pth'):
         # TODO: Add support for .pth visualization
@@ -119,13 +129,11 @@ def visualize():
     
     return redirect(url_for('blog.index'))
 
-    
 
-@bp.route('/list', methods=('GET',))
+@bp.route('/experiments', methods=('GET',))
 @login_required
-def list():
-    app = current_app
-    db=get_db()
+def experiments():
+    db = get_db()
     cursor = db.cursor()
 
     cursor.execute('SELECT * FROM experiments')
@@ -140,17 +148,13 @@ def list():
 def export():
     
     app = current_app
-    my_array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14]
+    my_array = list(range(1, 15))
     
-    filepath=os.path.join(app.config['UPLOAD_FOLDER'])
-    output_path = filepath.replace('input', 'bounding_boxes')
-    output_file=os.path.join(output_path,'bb.txt')
-
-    f = open(output_file, "w")
-    for item in my_array:
-        f.write(str(item) + '\n')
-       
-    f.close()
+    output_file = os.path.join(app.config['ROOT_FOLDER'], 'static', 'bounding_boxes', 'bb.txt')
+    
+    with open(output_file, "w") as f:
+        for item in my_array:
+            f.write(str(item) + '\n')
 
     return send_file(output_file, as_attachment=True)
 
