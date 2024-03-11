@@ -216,8 +216,8 @@ def process(save_path, model, dataset):
 
     
 def get_bounding_boxes(output):
-    if os.path.exists(output+'_bounding_box.txt'):
-        return os.path.join(output, '_bounding_box.txt')
+    if os.path.exists(output+'/bounding_box.txt'):
+        return os.path.join(output, 'bounding_box.txt')
     f = open(os.path.join(output, 'pred_instance', '.txt'), 'r')
     masks = f.readlines()
     masks = [mask.rstrip().split() for mask in masks]
@@ -230,10 +230,10 @@ def get_bounding_boxes(output):
         ymin, ymax = np.min(in_points[:, 1]), np.max(in_points[:, 1])
         zmin, zmax = np.min(in_points[:, 2]), np.max(in_points[:, 2])
         
-        with open(output+'_output.txt', 'a+') as file:
+        with open(output+'/bounding_box.txt', 'a+') as file:
             file.write('{} {} {} {} {} {} {} {}\n'.format(xmin, ymin, zmin, xmax, ymax, zmax, mask[1], mask[2]))
 
-    return os.path.join(output, '_bounding_box.txt')
+    return os.path.join(output, 'bounding_box.txt')
 
 
 
