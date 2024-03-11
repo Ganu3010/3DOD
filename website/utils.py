@@ -237,6 +237,41 @@ def get_bounding_boxes(output):
 
 
 
+def visualize_bounding_boxes(point_cloud_path):
+    pcd = o3d.io.read_point_cloud(point_cloud_path)
+    bounding_box_file_path='./static/output/scene0000_00_vh_clean_2/bounding_box.txt'
+
+    with open(bounding_box_file_path, 'r') as file:
+        bounding_boxes = file.readlines()
+
+    vis = o3d.visualization.Visualizer()
+    vis.create_window()
+
+    vis.add_geometry(pcd)
+
+    for box_info in bounding_boxes:
+        values = [float(val) for val in box_info.split()]
+        xmin, ymin, zmin, xmax, ymax, zmax = values[:6]
+        box_id = int(values[6])
+        confidence = float(values[7])
+
+        bounding_box = o3d.geometry.OrientedBoundingBox()
+        bounding_box.center = [(xmin + xmax) / 2, (ymin + ymax) / 2, (zmin + zmax) / 2]
+        bounding_box.extent = [(xmax - xmin) / 2, (ymax - ymin) / 2, (zmax - zmin) / 2]
+        bounding_box.color=[1.0, 0.0, 0.0]
+
+        vis.add_geometry(bounding_box)
+
+        # text_id = o3d.geometry.TriangleMesh.create_text(str(box_id), 1, 0.1, (xmin, ymin, zmax))
+        # text_confidence = o3d.geometry.TriangleMesh.create_text(f'Conf: {confidence:.2f}', 1, 0.1, (xmin, ymin, zmin - 0.1))
+        # vis.add_geometry(text_id)
+        # vis.add_geometry(text_confidence)
+
+    vis.run()
+    vis.destroy_window()
+
+
+
 
 def get_coords_color(output):
     '''

@@ -122,10 +122,12 @@ def visualize():
     elif filepath.endswith(('.txt', '.npy')):
         filepath = utils.to_pcd(filepath)
     
+
     point_cloud = o3d.io.read_point_cloud(filepath)
-    aabb = point_cloud.get_axis_aligned_bounding_box()
+    visualize_bounding_boxes(point_cloud)
+    #aabb = point_cloud.get_axis_aligned_bounding_box()
     
-    o3d.visualization.draw_geometries([point_cloud, aabb])
+    #o3d.visualization.draw_geometries([point_cloud, aabb])
     
     return redirect(url_for('blog.index'))
 
