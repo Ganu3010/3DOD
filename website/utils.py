@@ -213,6 +213,31 @@ def process(save_path, model, dataset):
         return output
 
 
+
+    
+def get_bounding_boxes(output):
+    if os.path.exists(output+'_bounding_box.txt'):
+        return os.path.join(output, '_bounding_box.txt')
+    f = open(os.path.join(output, 'pred_instance', '.txt'), 'r')
+    masks = f.readlines()
+    masks = [mask.rstrip().split() for mask in masks]
+    for mask in masks:
+        bm = np.loadtxt(os.path.join(output, 'pred_instance', mask[0])).astype(int)
+        pcd = o3d.io.read_point_cloud(output+'.ply')
+        points = np.asarray(pcd.points).astype(float)
+        in_points = points[bm==1]
+        xmin, xmax = np.min(in_points[:, 0]), np.max(in_points[:, 0])
+        ymin, ymax = np.min(in_points[:, 1]), np.max(in_points[:, 1])
+        zmin, zmax = np.min(in_points[:, 2]), np.max(in_points[:, 2])
+        
+        with open(output+'_output.txt', 'a+') as file:
+            file.write('{} {} {} {} {} {} {} {}\n'.format(xmin, ymin, zmin, xmax, ymax, zmax, mask[1], mask[2]))
+
+    return os.path.join(output, '_bounding_box.txt')
+
+
+
+
 def get_coords_color(output):
     '''
     Helper function from SPFormer/tools/visualize.py
