@@ -218,6 +218,7 @@ def process(save_path, model, dataset):
 def get_bounding_boxes(output):
 
     pcd = o3d.io.read_point_cloud(os.path.join(output, 'output.ply'))
+    xyz = np.asarray(pcd.points, dtype=np.float64)
     vis = o3d.visualization.Visualizer()
     vis.create_window()
     vis.add_geometry(pcd)
@@ -225,17 +226,42 @@ def get_bounding_boxes(output):
     f = open(os.path.join(output, 'pred_instance', '.txt'), 'r')
     masks = f.readlines()
     masks = [mask.rstrip().split() for mask in masks]
-    for mask in masks:
-        bm = np.loadtxt(os.path.join(output, 'pred_instance', mask[0])).astype(int)
-        pcd = o3d.io.read_point_cloud(output+'/output.ply')
-        points = np.asarray(pcd.points).astype(float)
-        in_points = points[bm==1]
-        bounding_box = o3d.geometry.OrientedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
-        bounding_box.color = [1.0, 0.0, 0.0]
+    ins_num = len(masks)
+    ins_pointnum = np.zeros(ins_num)
+    inst_label = -100 * np.ones(len(pcd.points)).astype(int)
+    scores = np.array([float(x[-1]) for x in masks])
+    sort_inds = np.argsort(scores)[::-1]
+    for i_ in range(len(masks)-1, -1, -1):
+        i = sort_inds[i_]
+        mask_path = os.path.join(output, 'pred_instance', masks[i][0])
+        assert os.path.isfile(mask_path), mask_path
+        if (float(masks[i][2])<0.09):
+            continue
+        mask = np.array(open(mask_path).read().splitlines(), dtype=int)
+        ins_pointnum[i] = mask.sum()
+        inst_label[mask == 1] = i
+    sort_idx = np.argsort(ins_pointnum)[::-1]
 
-        vis.add_geometry(bounding_box)
+    for _sort_id in range(ins_num):
+        in_points = np.array(xyz[inst_label == sort_idx[_sort_id]])
+        if len(in_points)>0:
+            bounding_box = o3d.geometry.OrientedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
+            bounding_box.color = [1.0, 0.0, 0.0]
+            vis.add_geometry(bounding_box)
+        
     vis.run()
     vis.destroy_window()
+    # for mask in masks:
+    #     bm = np.loadtxt(os.path.join(output, 'pred_instance', mask[0])).astype(int)
+    #     pcd = o3d.io.read_point_cloud(output+'/output.ply')
+    #     points = np.asarray(pcd.points).astype(float)
+    #     in_points = points[bm==1]
+    #     bounding_box = o3d.geometry.OrientedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
+    #     bounding_box.color = [1.0, 0.0, 0.0]
+
+    #     vis.add_geometry(bounding_box)
+    # vis.run()
+    # vis.destroy_window()
 
 def get_coords_color(output):
     '''
