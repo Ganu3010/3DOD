@@ -1,7 +1,7 @@
 import os
 
 import torch
-import gorilla
+# import gorilla
 import numpy as np
 import open3d as o3d
 
@@ -223,7 +223,8 @@ def get_bounding_boxes(output):
     masks = [mask.rstrip().split() for mask in masks]
     for mask in masks:
         bm = np.loadtxt(os.path.join(output, 'pred_instance', mask[0])).astype(int)
-        pcd = o3d.io.read_point_cloud(output+'.ply')
+        print(bm.shape)
+        pcd = o3d.io.read_point_cloud(output+'/output.ply')
         points = np.asarray(pcd.points).astype(float)
         in_points = points[bm==1]
         xmin, xmax = np.min(in_points[:, 0]), np.max(in_points[:, 0])
@@ -272,8 +273,7 @@ def get_coords_color(output):
         inst_label[mask == 1] = i
     sort_idx = np.argsort(ins_pointnum)[::-1]
     for _sort_id in range(ins_num):
-        inst_label_pred_rgb[inst_label == sort_idx[_sort_id]
-                            ] = COLOR_DETECTRON2[_sort_id % len(COLOR_DETECTRON2)]
+        inst_label_pred_rgb[inst_label == sort_idx[_sort_id]] = COLOR_DETECTRON2[_sort_id % len(COLOR_DETECTRON2)]
     rgb = inst_label_pred_rgb
 
     return xyz, rgb
