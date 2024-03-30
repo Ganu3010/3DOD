@@ -245,23 +245,12 @@ def get_bounding_boxes(output):
     for _sort_id in range(ins_num):
         in_points = np.array(xyz[inst_label == sort_idx[_sort_id]])
         if len(in_points)>0:
-            bounding_box = o3d.geometry.OrientedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
+            bounding_box = o3d.geometry.AxisAlignedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
             bounding_box.color = [1.0, 0.0, 0.0]
             vis.add_geometry(bounding_box)
         
     vis.run()
     vis.destroy_window()
-    # for mask in masks:
-    #     bm = np.loadtxt(os.path.join(output, 'pred_instance', mask[0])).astype(int)
-    #     pcd = o3d.io.read_point_cloud(output+'/output.ply')
-    #     points = np.asarray(pcd.points).astype(float)
-    #     in_points = points[bm==1]
-    #     bounding_box = o3d.geometry.OrientedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
-    #     bounding_box.color = [1.0, 0.0, 0.0]
-
-    #     vis.add_geometry(bounding_box)
-    # vis.run()
-    # vis.destroy_window()
 
 def get_coords_color(output):
     '''
