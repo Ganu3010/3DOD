@@ -68,27 +68,33 @@ def process():
         if os.path.isfile(filepath):
             if request.form['dataset'] == 'scannetv2' and request.form['model'] == 'spformer':
                 
-                preprocessed_file = os.path.split(utils.preprocess(filepath, 'spformer', 'scannetv2'))[-1]
-                processed_ply = os.path.split(utils.process(preprocessed_file, 'spformer', 'scannetv2'))[-1]
+                try:
+                    preprocessed_file = os.path.split(utils.preprocess(filepath, 'spformer', 'scannetv2'))[-1]
+                    processed_ply = os.path.split(utils.process(preprocessed_file, 'spformer', 'scannetv2'))[-1]
+                except Exception as e:
+                    flash(f"ERROR! {e}")
 
-                db.execute(
-                    """
-                    INSERT INTO experiments (
-                        input_file_path,
-                        preprocessed_file_path,
-                        output_file_path,
-                        dataset,
-                        model
-                    ) VALUES (?, ?, ?, ?, ?)
-                    """, (
-                        os.path.split(filepath)[-1],
-                        preprocessed_file,
-                        processed_ply,
-                        request.form['dataset'],
-                        request.form['model']
-                     ),
-                )
-                db.commit()
+                try:
+                    db.execute(
+                        """
+                        INSERT INTO experiments (
+                            input_file_path,
+                            preprocessed_file_path,
+                            output_file_path,
+                            dataset,
+                            model
+                        ) VALUES (?, ?, ?, ?, ?)
+                        """, (
+                            os.path.split(filepath)[-1],
+                            preprocessed_file,
+                            processed_ply,
+                            request.form['dataset'],
+                            request.form['model']
+                        ),
+                    )
+                    db.commit()
+                except Exception as e:
+                    flash(f"ERROR! {e}")
 
                 return redirect(url_for('blog.visualize', output=True, filename=processed_ply))
 
@@ -128,18 +134,26 @@ def visualize():
     else:
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], request.args.get('filename'))
     
-    if filepath.endswith('.pth'):
-        # TODO: Add support for .pth visualization
-        flash('.pth not supported for visualization yet!')
-    elif filepath.endswith(('.txt', '.npy')):
-        filepath = utils.to_pcd(filepath)
+        if filepath.endswith('.pth'):
+            # TODO: Add support for .pth visualization
+            flash('.pth not supported for visualization yet!')
+        elif filepath.endswith(('.txt', '.npy')):
+            try:
+                filepath = utils.to_pcd(filepath)
+            except Exception as e:
+                vis.destroy_window()
+                flash(f"ERROR! {e}! Please make sure file is valid!")
+                return redirect(url_for('blog.index'))
     
-    point_cloud = o3d.io.read_point_cloud(filepath)
-    aabb = point_cloud.get_axis_aligned_bounding_box()
+    try:
+        point_cloud = o3d.io.read_point_cloud(filepath)
+        aabb = point_cloud.get_axis_aligned_bounding_box()
+        vis.add_geometry(point_cloud)
+        vis.add_geometry(aabb)
+        vis.run()
+    except Exception as e:
+        flash(f"ERROR! {e}")    
     
-    vis.add_geometry(point_cloud)
-    vis.add_geometry(aabb)
-    vis.run()
     vis.clear_geometries()
     vis.destroy_window()
     
