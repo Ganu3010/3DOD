@@ -35,6 +35,7 @@ def create_app(test_config=None):
     
     # Initialize open3d webserver for visualization
     o3d.visualization.webrtc_server.enable_webrtc()
+    app.config['VISUALIZER'] = o3d.visualization.Visualizer()
 
     from . import db
     db.init_app(app)

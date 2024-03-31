@@ -111,8 +111,20 @@ def visualize():
     '''
     
     app = current_app
+    vis = app.config['VISUALIZER']
+    vis.create_window()
+    
     if request.args.get('output'):
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'].replace('input', 'output'), request.args.get('filename'), 'output.ply')
+        op_path = os.path.join(app.config['UPLOAD_FOLDER'].replace(
+            'input', 'output'), request.args.get('filename'))
+        filepath = os.path.join(op_path, 'output.ply')
+        bbs = utils.get_bounding_boxes(op_path)
+        
+        for in_points in bbs:
+            if len(in_points) > 0:
+                bb = o3d.geometry.AxisAlignedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
+                bb.color = [1, 0, 0]
+                vis.add_geometry(bb)
     else:
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], request.args.get('filename'))
     
@@ -122,12 +134,14 @@ def visualize():
     elif filepath.endswith(('.txt', '.npy')):
         filepath = utils.to_pcd(filepath)
     
-
     point_cloud = o3d.io.read_point_cloud(filepath)
-    visualize_bounding_boxes(point_cloud)
-    #aabb = point_cloud.get_axis_aligned_bounding_box()
+    aabb = point_cloud.get_axis_aligned_bounding_box()
     
-    #o3d.visualization.draw_geometries([point_cloud, aabb])
+    vis.add_geometry(point_cloud)
+    vis.add_geometry(aabb)
+    vis.run()
+    vis.clear_geometries()
+    vis.destroy_window()
     
     return redirect(url_for('blog.index'))
 
