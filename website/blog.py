@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import open3d as o3d
 
 from flask import (
@@ -44,8 +45,23 @@ def index():
         if file and allowed_file(file.filename):
             app = current_app
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            try:
+                file_format = 'xyz' if filename.endswith('txt') else 'auto'
+                tmp = o3d.io.read_point_cloud(filepath, format=file_format)
+                if len(tmp.points) < 1:
+                    flash("File is empty!")
+                    raise KeyError
+            except Exception as e:
+                flash("Upload Valid File!")
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                return render_template('blog/main.html')
+
             return redirect(url_for('blog.process', filename=filename))
+        else:
+            flash('Upload Valid File!')
 
     return render_template('blog/main.html')
 
@@ -73,6 +89,7 @@ def process():
                     processed_ply = os.path.split(utils.process(preprocessed_file, 'spformer', 'scannetv2'))[-1]
                 except Exception as e:
                     flash(f"ERROR! {e}")
+                    return render_template('blog/process.html', filename=request.args.get('filename'))
 
                 try:
                     db.execute(
@@ -126,11 +143,18 @@ def visualize():
         filepath = os.path.join(op_path, 'output.ply')
         bbs = utils.get_bounding_boxes(op_path)
         
+        corners = []
         for in_points in bbs:
             if len(in_points) > 0:
                 bb = o3d.geometry.AxisAlignedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
+                corners.append(np.asarray(bb.get_box_points()))
                 bb.color = [1, 0, 0]
                 vis.add_geometry(bb)
+        
+        with open(os.path.join(op_path, 'bounding_boxes.txt'), 'w') as f:
+            for c in corners:
+                f.write(str(c))
+                f.write('\n')
     else:
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], request.args.get('filename'))
     
@@ -157,7 +181,7 @@ def visualize():
     vis.clear_geometries()
     vis.destroy_window()
     
-    return redirect(url_for('blog.index'))
+    return render_template('blog/process.html', filename=request.args.get('filename'))
 
 
 @bp.route('/experiments', methods=('GET',))
@@ -172,19 +196,16 @@ def experiments():
     return render_template('blog/list.html', items=rows)
 
 
-
 @bp.route('/export', methods=('GET',))
 @login_required
 def export():
-    
+    '''
+    Export predicted bounding boxes to txt file
+    '''
     app = current_app
-    my_array = list(range(1, 15))
     
-    output_file = os.path.join(app.config['ROOT_FOLDER'], 'static', 'bounding_boxes', 'bb.txt')
-    
-    with open(output_file, "w") as f:
-        for item in my_array:
-            f.write(str(item) + '\n')
+    output_file = os.path.join(app.config['UPLOAD_FOLDER'].replace(
+        'input', 'output'), request.args.get('filename'), 'bounding_boxes.txt')
 
     return send_file(output_file, as_attachment=True)
 

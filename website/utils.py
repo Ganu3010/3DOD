@@ -95,7 +95,6 @@ def to_pcd(ip_file):
     points = np.loadtxt(ip_file) if ip_file.endswith(
         'txt') else np.load(ip_file)
 
-    # TODO: Verify if we really need to do this.
     points[:, -3:] /= 255
     xyz_min = np.amin(points, axis=0)[:3]
     points[:, :3] -= xyz_min
@@ -125,8 +124,8 @@ def preprocess(filepath, model, dataset):
         if not filepath.endswith('.ply'):
             pcd_file = to_pcd(filepath)
             pcd = o3d.io.read_point_cloud(pcd_file)
-            o3d.io.write_point_cloud(pcd_file.split('.')[0]+'.ply', pcd)
             filepath = pcd_file.split('.')[0]+'.ply'
+            o3d.io.write_point_cloud(filepath, pcd)
 
         file = plyfile.PlyData.read(filepath)
         points = np.array([list(x) for x in file.elements[0]])
@@ -152,13 +151,13 @@ def process(save_path, model, dataset):
     If static/output/filename/pred_instances exists, skips prediction.
     website/SPFormer/configs and website/SPFormer/checkpoints dirs are needed for processing.
     '''
+    
     app = current_app
     if model == 'spformer' and dataset == 'scannetv2':
         output = os.path.join(
             app.config['ROOT_FOLDER'], 'static', 'output', save_path.split('.')[0])
 
-        # TODO: Check if this works as intended
-        if os.path.isdir(os.path.join(output, 'pred_instances')):
+        if os.path.isdir(os.path.join(output, 'pred_instance')):
             return output
 
         from .SPFormer.spformer.model import SPFormer

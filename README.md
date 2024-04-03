@@ -12,7 +12,7 @@ flask --app website run --debug
 
 ### TODO
 <ol>
-    <li>Display bounding boxes around visualized object instances</li>
+    <li></li>
     <li><s>Display Open3D visualization in same window as website</s> Look for alternatives to Open3D</li>
     <li>Add Export functionality to export predicted bounding boxes</li>
     <li>Create page for Experiments DB to easily visualize, edit, delete past experiments</li>
