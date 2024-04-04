@@ -101,6 +101,11 @@ def process():
                             dataset,
                             model
                         ) VALUES (?, ?, ?, ?, ?)
+                        ON CONFLICT(input_file_path) DO UPDATE SET
+                            preprocessed_file_path=EXCLUDED.preprocessed_file_path,
+                            output_file_path=EXCLUDED.output_file_path,
+                            dataset=EXCLUDED.dataset,
+                            model=EXCLUDED.model
                         """, (
                             os.path.split(filepath)[-1],
                             preprocessed_file,
