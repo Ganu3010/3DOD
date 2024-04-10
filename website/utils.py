@@ -94,7 +94,7 @@ CLASS_MAPPING = {
     24: 'refrigerator', 28: 'shower curtain', 33: 'toilet',
     34: 'sink', 36: 'bathtub', 39: 'otherfurniture'
 }
-
+CONFIDENCE_THRESHOLD = 0.19
 
 def to_pcd(ip_file):
     if ip_file.endswith('.pcd'):
@@ -242,7 +242,7 @@ def get_bounding_boxes(output):
         mask_path = os.path.join(output, 'pred_instance', masks[i][0])
         assert os.path.isfile(mask_path), mask_path
         
-        if (float(masks[i][2]) < 0.09):
+        if (float(masks[i][2]) < CONFIDENCE_THRESHOLD):
             continue
         mask = np.array(open(mask_path).read().splitlines(), dtype=int)
         ins_pointnum[i] = mask.sum()
@@ -289,7 +289,7 @@ def get_coords_color(output):
         mask_path = os.path.join(output, 'pred_instance', masks[i][0])
         assert os.path.isfile(mask_path), mask_path
         
-        if (float(masks[i][2]) < 0.09):
+        if (float(masks[i][2]) < CONFIDENCE_THRESHOLD):
             continue
         mask = np.array(open(mask_path).read().splitlines(), dtype=int)
         ins_pointnum[i] = mask.sum()
@@ -303,11 +303,11 @@ def get_coords_color(output):
     #                         ] = COLOR_DETECTRON2[_sort_id % len(COLOR_DETECTRON2)]
     
     # COLOR OBJECTS ACCORDING TO CATEGORY
-    for label_id in CLASS_MAPPING.keys():
-        inst_label_pred_rgb[class_of_inst == label_id] = COLOR_DETECTRON2[label_id]
+    # for label_id in CLASS_MAPPING.keys():
+    #     inst_label_pred_rgb[class_of_inst == label_id] = COLOR_DETECTRON2[label_id]
     
     # DO NOT COLOR
-    # inst_label_pred_rgb = rgb
+    inst_label_pred_rgb = rgb
     
     return xyz, inst_label_pred_rgb
 

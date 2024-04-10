@@ -216,7 +216,7 @@ def export():
     app = current_app
     
     output_file = os.path.join(app.config['UPLOAD_FOLDER'].replace(
-        'input', 'output'), request.args.get('filename'), 'bounding_boxes.txt')
+        'input', 'output'), request.args.get('filename').split('.')[0], 'bounding_boxes.txt')
 
     return send_file(output_file, as_attachment=True)
 
