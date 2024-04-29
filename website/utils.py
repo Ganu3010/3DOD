@@ -1,7 +1,7 @@
 import os
 
 import torch
-import gorilla
+# import gorilla
 import numpy as np
 import open3d as o3d
 
