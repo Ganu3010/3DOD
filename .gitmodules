@@ -1,0 +1,3 @@
+[submodule "website/SPFormer"]
+	path = website/SPFormer
+	url = git@github.com:SpookyWooky5/SPFormer.git

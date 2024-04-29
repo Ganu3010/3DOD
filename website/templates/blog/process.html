@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+<div class="container">
+    <h2>{% block title %}Process{% endblock %}</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <br />
+    {% if g.user %}
+    <div class="container">
+        <h3 align="center">Process Point Cloud</h3>
+        <br />
+
+        <div class="container">
+            <form class="d-grid gap-3" method="post" action="{{ url_for('blog.process', filename=filename) }}" enctype="multipart/form-data">
+                <div class="row justify-content-center">
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label for="dataset">
+                                <h5>Dataset: </h5>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="radio" name="dataset" id="scannetv2" value="scannetv2" checked>
+                            <label class="form-check-label" for="scannetv2"> SCANNETV2 </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="radio" name="dataset" id="s3dis" value="s3dis" disabled>
+                            <label class="form-check-label" for="s3dis"> STANFORD </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="radio" name="dataset" id="custom" value="custom" disabled>
+                            <label class="form-check-label" for="custom"> CUSTOM DATA </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label for="model">
+                                <h5>Model: </h5>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="radio" name="model" id="spformer" value="spformer" checked>
+                            <label class="form-check-label" for="spformer"> SPFORMER </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="radio" name="model" id="pnpp" value="pnpp" disabled>
+                            <label class="form-check-label" for="pnpp"> POINTNET++ </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="radio" name="model" id="finetuned" value="finetuned" disabled>
+                            <label class="form-check-label" for="finetuned"> FINETUNED MODEL </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-1">
+                        <a href="{{ url_for('blog.visualize', filename=filename) }}" class="btn btn-dark" role="button">Visualize</a>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" class="btn btn-dark" id="predict" value="predict">Predict</button>
+                    </div>
+                    <!-- <div class="col-md-4">
+                        <a href="{{ url_for('blog.experiments')}}" class="btn btn-dark" role="button">List</a>
+                    </div> -->
+                    <div class="col-md-1">
+                        <a href="{{ url_for('blog.export', filename=filename)}}" class="btn btn-dark" role="button">Export</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="container">
+        <h4> Please Login or Register to access this page! </h4>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
