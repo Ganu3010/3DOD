@@ -3,27 +3,22 @@
 
 Currently only compatible with SPFormer and ScanNetv2. <br />
 
-Dependencies and requirements will be updated soon. <br />
-
-
 ```
 flask --app website run --debug
 ```
+to run the app. <br />
 
 ### TODO
 <ol>
-    <li></li>
-    <li>Choose better colours for objects</li>
     <li>BB generation and storage can be optimized</li>
     <li>utils.get_bouding_boxes and utils.get_cord_colors have overlapping processing</li>
-    <li>experiment with different confidence thresholds</li>
-    <li>DB time does not match IST</li>
+    <li>DB time does not match system time</li>
     <li>Add checkboxes on /process for overwrite_previos and visualizing by instance/class</li>
-    <li>Create page for Experiments DB to easily visualize, edit, delete past experiments</li>
-    <li><s>Display Open3D visualization in same window as website</s> Look for alternatives to Open3D</li>
+    <li>Look for alternatives to Open3D</li>
 </ol>
 
 ### Installation
+requirements.txt is provided just for reference. Please use below points for proper installation.
 <ol>
     <li>Flask</li>
     <li>Refer to spookywooky5/SPFormer to install dependencies </li>
@@ -41,3 +36,14 @@ flask --app website run --debug
     </li>
     <li>Create checkpoint dir in SPFormer and add the checkpoint in it</li>
 </ol>
+
+### Training
+SPFormer requires that all data be stored in SPFormer/data/scannetv2. <br />
+Please store accordingly or use symbolic linkages as needed.
+Make sure to download the .pth checkpoint and store in SPFormer/checkpoints. Refer to SPFormer docs for the file and more details. <br />
+Also make sure to make modifications in SPFormer/configs/spf_scannet.yml to set training configurations like batch_size and number of epochs. <br />
+
+```
+cd website/SPFormer
+python tools/train.py configs/spf_scannet.yml
+```
