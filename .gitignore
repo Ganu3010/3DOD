@@ -16,6 +16,7 @@ website/static/preprocessed/*
 website/static/bounding_boxes/*/*
 !website/static/bounding_boxes/scene0000_00_vh_clean_2/*
 
+SPFormer/data
 SPFormer/docs
 SPFormer/checkpoints
 SPFormer/segmentator
