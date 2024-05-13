@@ -13,5 +13,6 @@ CREATE TABLE IF NOT EXISTS experiments (
   output_file_path TEXT,
   dataset TEXT NOT NULL,
   model TEXT NOT NULL
+  UNIQUE(input_file_path, dataset, model)
 );
 

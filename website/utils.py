@@ -86,6 +86,15 @@ COLOR_DETECTRON2 = np.array([
     # 1.000, 1.000, 1.000
     ]).astype(np.float32).reshape(-1, 3) * 255
 
+CLASS_MAPPING = {
+    3: 'cabinet', 4: 'bed', 5: 'chair',
+    6: 'sofa', 7: 'table', 8: 'door',
+    9: 'window', 10: 'bookshelf', 11: 'picture',
+    12: 'counter', 14: 'desk', 16: 'curtain',
+    24: 'refrigerator', 28: 'shower curtain', 33: 'toilet',
+    34: 'sink', 36: 'bathtub', 39: 'otherfurniture'
+}
+CONFIDENCE_THRESHOLD = 0.19
 
 def to_pcd(ip_file):
     if ip_file.endswith('.pcd'):
@@ -157,51 +166,50 @@ def process(save_path, model, dataset):
         output = os.path.join(
             app.config['ROOT_FOLDER'], 'static', 'output', save_path.split('.')[0])
 
-        if os.path.isdir(os.path.join(output, 'pred_instance')):
-            return output
+        overwrite_previous = False
+        if not os.path.isdir(os.path.join(output, 'pred_instance')) or overwrite_previous:
+            from .SPFormer.spformer.model import SPFormer
+            from .SPFormer.spformer.dataset import build_dataloader, build_dataset
+            from .SPFormer.spformer.utils import get_root_logger, save_pred_instances
 
-        from .SPFormer.spformer.model import SPFormer
-        from .SPFormer.spformer.dataset import build_dataloader, build_dataset
-        from .SPFormer.spformer.utils import get_root_logger, save_pred_instances
+            spformer_root = os.path.join(app.config['ROOT_FOLDER'], 'SPFormer')
+            config = os.path.join(spformer_root, 'configs', 'spf_scannet.yaml')
+            checkpoint = os.path.join(
+                spformer_root, 'checkpoints', 'spf_scannet_512.pth')
 
-        spformer_root = os.path.join(app.config['ROOT_FOLDER'], 'SPFormer')
-        config = os.path.join(spformer_root, 'configs', 'spf_scannet.yaml')
-        checkpoint = os.path.join(
-            spformer_root, 'checkpoints', 'spf_scannet_512.pth')
+            cfg = gorilla.Config.fromfile(config)
 
-        cfg = gorilla.Config.fromfile(config)
+            cfg.data.test.prefix = 'preprocessed'
+            cfg.data.test.suffix = save_path
+            cfg.data.test.data_root = os.path.split(app.config['UPLOAD_FOLDER'])[0]
 
-        cfg.data.test.prefix = 'preprocessed'
-        cfg.data.test.suffix = save_path
-        cfg.data.test.data_root = os.path.split(app.config['UPLOAD_FOLDER'])[0]
+            gorilla.set_random_seed(cfg.test.seed)
+            logger = get_root_logger()
 
-        gorilla.set_random_seed(cfg.test.seed)
-        logger = get_root_logger()
+            model = SPFormer(**cfg.model).cuda()
+            gorilla.load_checkpoint(model, checkpoint, strict=False)
 
-        model = SPFormer(**cfg.model).cuda()
-        gorilla.load_checkpoint(model, checkpoint, strict=False)
+            dataset = build_dataset(cfg.data.test, logger)
+            dataloader = build_dataloader(
+                dataset, training=False, **cfg.dataloader.test)
 
-        dataset = build_dataset(cfg.data.test, logger)
-        dataloader = build_dataloader(
-            dataset, training=False, **cfg.dataloader.test)
+            results, scan_ids, pred_insts = [], [], []
 
-        results, scan_ids, pred_insts = [], [], []
+            progress_bar = tqdm(total=len(dataloader))
+            with torch.no_grad():
+                model.eval()
+                for batch in dataloader:
+                    result = model(batch, mode='predict')
+                    results.append(result)
+                    progress_bar.update()
+                progress_bar.close()
 
-        progress_bar = tqdm(total=len(dataloader))
-        with torch.no_grad():
-            model.eval()
-            for batch in dataloader:
-                result = model(batch, mode='predict')
-                results.append(result)
-                progress_bar.update()
-            progress_bar.close()
+            for res in results:
+                scan_ids.append(res['scan_id'])
+                pred_insts.append(res['pred_instances'])
 
-        for res in results:
-            scan_ids.append(res['scan_id'])
-            pred_insts.append(res['pred_instances'])
-
-        save_pred_instances(output, 'pred_instance',
-                            scan_ids, pred_insts, dataset.NYU_ID)
+            save_pred_instances(output, 'pred_instance',
+                                scan_ids, pred_insts, dataset.NYU_ID)
 
         xyz, rgb = get_coords_color(output)
         points = xyz[:, :3]
@@ -224,6 +232,7 @@ def get_bounding_boxes(output):
     ins_num = len(masks)
     ins_pointnum = np.zeros(ins_num)
     inst_label = -100 * np.ones(len(pcd.points)).astype(int)
+    labels = np.zeros(ins_num).astype(int)
     
     scores = np.array([float(x[-1]) for x in masks])
     sort_inds = np.argsort(scores)[::-1]
@@ -233,11 +242,12 @@ def get_bounding_boxes(output):
         mask_path = os.path.join(output, 'pred_instance', masks[i][0])
         assert os.path.isfile(mask_path), mask_path
         
-        if (float(masks[i][2]) < 0.09):
+        if (float(masks[i][2]) < CONFIDENCE_THRESHOLD):
             continue
         mask = np.array(open(mask_path).read().splitlines(), dtype=int)
         ins_pointnum[i] = mask.sum()
         inst_label[mask == 1] = i
+        labels[i] = int(masks[i][1])
     sort_idx = np.argsort(ins_pointnum)[::-1]
 
     bbs = []
@@ -245,7 +255,7 @@ def get_bounding_boxes(output):
         in_points = np.array(xyz[inst_label == sort_idx[_sort_id]])
         bbs.append(in_points)
     
-    return bbs
+    return bbs, labels[sort_idx]
 
 
 def get_coords_color(output):
@@ -268,6 +278,7 @@ def get_coords_color(output):
     ins_num = len(masks)
     ins_pointnum = np.zeros(ins_num)
     inst_label = -100 * np.ones(rgb.shape[0]).astype(int)
+    class_of_inst = np.zeros(rgb.shape[0]).astype(int)
 
     # sort score such that high score has high priority for visualization
     scores = np.array([float(x[-1]) for x in masks])
@@ -278,19 +289,27 @@ def get_coords_color(output):
         mask_path = os.path.join(output, 'pred_instance', masks[i][0])
         assert os.path.isfile(mask_path), mask_path
         
-        if (float(masks[i][2]) < 0.09):
+        if (float(masks[i][2]) < CONFIDENCE_THRESHOLD):
             continue
         mask = np.array(open(mask_path).read().splitlines(), dtype=int)
         ins_pointnum[i] = mask.sum()
         inst_label[mask == 1] = i
+        class_of_inst[mask == 1] = int(masks[i][1])
     sort_idx = np.argsort(ins_pointnum)[::-1]
     
-    for _sort_id in range(ins_num):
-        inst_label_pred_rgb[inst_label == sort_idx[_sort_id]
-                            ] = COLOR_DETECTRON2[_sort_id % len(COLOR_DETECTRON2)]
-    rgb = inst_label_pred_rgb
-
-    return xyz, rgb
+    # COLOR OBJECTS ACCORDING TO INSTANCE
+    # for _sort_id in range(ins_num):
+    #     inst_label_pred_rgb[inst_label == sort_idx[_sort_id]
+    #                         ] = COLOR_DETECTRON2[_sort_id % len(COLOR_DETECTRON2)]
+    
+    # COLOR OBJECTS ACCORDING TO CATEGORY
+    # for label_id in CLASS_MAPPING.keys():
+    #     inst_label_pred_rgb[class_of_inst == label_id] = COLOR_DETECTRON2[label_id]
+    
+    # DO NOT COLOR
+    inst_label_pred_rgb = rgb
+    
+    return xyz, inst_label_pred_rgb
 
 
 def write_ply(verts, colors, indices, output_file):

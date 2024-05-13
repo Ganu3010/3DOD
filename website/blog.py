@@ -141,27 +141,38 @@ def visualize():
     app = current_app
     vis = app.config['VISUALIZER']
     vis.create_window()
+    filename = request.args.get('filename')
     
     if request.args.get('output'):
-        op_path = os.path.join(app.config['UPLOAD_FOLDER'].replace(
-            'input', 'output'), request.args.get('filename'))
+        op_path = os.path.join(app.config['UPLOAD_FOLDER'].replace('input', 'output'), filename)
         filepath = os.path.join(op_path, 'output.ply')
-        bbs = utils.get_bounding_boxes(op_path)
+        filename += '.ply'
         
         corners = []
-        for in_points in bbs:
+        bbs, labels = utils.get_bounding_boxes(op_path)
+        for in_points, label in zip(bbs, labels):
             if len(in_points) > 0:
                 bb = o3d.geometry.AxisAlignedBoundingBox().create_from_points(o3d.utility.Vector3dVector(in_points))
-                corners.append(np.asarray(bb.get_box_points()))
+                bb_corners = np.asarray(bb.get_box_points())
+                corners.append(bb_corners)
                 bb.color = [1, 0, 0]
                 vis.add_geometry(bb)
+                
+                label = o3d.t.geometry.TriangleMesh.create_text(
+                    utils.CLASS_MAPPING[label], depth=5).to_legacy()
+                label.paint_uniform_color((0.8, 1, 0.1))
+                label.transform([[0.012, 0, 0, bb_corners[-3][0]],
+                                 [0, 0.012, 0, bb_corners[-3][1]],
+                                 [0, 0, 0.012, bb_corners[-3][2]],
+                                 [0, 0, 0, 0.95]])
+                vis.add_geometry(label)
         
         with open(os.path.join(op_path, 'bounding_boxes.txt'), 'w') as f:
             for c in corners:
                 f.write(str(c))
                 f.write('\n')
     else:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], request.args.get('filename'))
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     
         if filepath.endswith('.pth'):
             # TODO: Add support for .pth visualization
@@ -185,8 +196,8 @@ def visualize():
     
     vis.clear_geometries()
     vis.destroy_window()
-    
-    return render_template('blog/process.html', filename=request.args.get('filename'))
+
+    return redirect(url_for('blog.process', filename=filename))
 
 
 @bp.route('/experiments', methods=('GET',))
@@ -210,7 +221,7 @@ def export():
     app = current_app
     
     output_file = os.path.join(app.config['UPLOAD_FOLDER'].replace(
-        'input', 'output'), request.args.get('filename'), 'bounding_boxes.txt')
+        'input', 'output'), request.args.get('filename').split('.')[0], 'bounding_boxes.txt')
 
     return send_file(output_file, as_attachment=True)
 
