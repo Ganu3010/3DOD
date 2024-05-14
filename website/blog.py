@@ -116,7 +116,8 @@ def process():
                     )
                     db.commit()
                 except Exception as e:
-                    flash(f"ERROR! {e}")
+                    pass
+                    # flash(f"ERROR! {e}")
 
                 return redirect(url_for('blog.visualize', output=True, filename=processed_ply))
 

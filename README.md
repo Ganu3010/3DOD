@@ -13,7 +13,7 @@ to run the app. <br />
     <li>BB generation and storage can be optimized</li>
     <li>utils.get_bouding_boxes and utils.get_cord_colors have overlapping processing</li>
     <li>DB time does not match system time</li>
-    <li>Add checkboxes on /process for overwrite_previos and visualizing by instance/class</li>
+    <li>Add checkboxes on /process for overwrite_previos and input for confidence interval</li>
     <li>Look for alternatives to Open3D</li>
 </ol>
 
@@ -45,5 +45,5 @@ Also make sure to make modifications in SPFormer/configs/spf_scannet.yml to set 
 
 ```
 cd website/SPFormer
-python tools/train.py configs/spf_scannet.yml
+python tools/train.py configs/spf_scannet.yaml
 ```
