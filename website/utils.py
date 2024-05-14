@@ -94,7 +94,7 @@ CLASS_MAPPING = {
     24: 'refrigerator', 28: 'shower curtain', 33: 'toilet',
     34: 'sink', 36: 'bathtub', 39: 'otherfurniture'
 }
-CONFIDENCE_THRESHOLD = 0.25
+CONFIDENCE_THRESHOLD = 0.5
 
 def to_pcd(ip_file):
     if ip_file.endswith('.pcd'):
