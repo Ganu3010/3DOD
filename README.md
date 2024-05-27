@@ -148,13 +148,12 @@ After inference, run visualization by execute the following command.
 ```
 python tools/visualization.py --prediction_path ${SAVE_PATH}
 ```
+You can visualize by Open3D or visualize saved `.ply` files on MeshLab. Arguments explaination can be found in `tools/visualiztion.py`.
 
 ## Acknowledgment
 Sincerely thanks for SPFormer repo. This repo is build upon it.
 
 
-
-You can visualize by Open3D or visualize saved `.ply` files on MeshLab. Arguments explaination can be found in `tools/visualiztion.py`.
 
 
 
