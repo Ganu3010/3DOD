@@ -3,7 +3,7 @@
 
 Currently only compatible with SPFormer and ScanNetv2. <br />
 
-### File extensions supported for Point Cloud Dataset
+### File extensions supported for Point Cloud 
 <ol>
     <li>.txt</li>
     <li>.ply</li>
@@ -12,10 +12,17 @@ Currently only compatible with SPFormer and ScanNetv2. <br />
     <li>.pth</li>
 </ol>
 
+### Data Format allowed in files
+```
+x y z r g b
+```
+Each point is defined by its position coordinates (x, y, z) and color (r, g, b) attribute.
+
+### Tu run app use command: 
 ```
 flask --app website run --debug
 ```
-to run the app. <br />
+
 
 ## Installation
 
