@@ -150,8 +150,35 @@ python tools/visualization.py --prediction_path ${SAVE_PATH}
 ```
 You can visualize by Open3D or visualize saved `.ply` files on MeshLab. Arguments explaination can be found in `tools/visualiztion.py`.
 
+## Implementation of Project 
+
+
+<div align ="center">
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/9002769f-e5df-4215-9694-47088ccfc988"> <br/> <br/>
+    Fig. 1: Home Page when user is not logged in <br/> <br/>
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/cf991fa9-f1a0-44de-ab1b-aa9d54557fd5"> <br/> <br/>
+    Fig 2: Login Page <br/> <br/>
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/7e8421e5-7231-40f0-b1a2-79fec3526254"><br/> <br/>
+    Fig. 3: Home Page when user is logged in / Upload Page <br/> <br/>
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/907d3c86-b069-4053-abfb-a2c88598f845"> <br/> <br/>
+    Fig. 4: After uploading valid point cloud file, Process Page  <br/> <br/>
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/96b3ae65-ea1a-49c6-b57d-42c55ae35d1d"> <br/> <br/>
+    Fig. 5: Visualization of input file in Open3D, after clicking Visualize<br/>  <br/>
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/f2ad8c4d-5b61-463e-9e04-295f2f63ecb2"> <br> <br/>
+    Fig. 6: Visualization of output with bounding boxes in Open3D, after clicking Predict <br/>  <br/>
+    <img src="https://github.com/Ganu3010/3DOD/assets/81025296/35a18e74-0c35-46c4-9905-e7db11c5f64a"> <br/> <br/>
+    Fig. 7: File is downloaded after clicking Export button <br/>  <br/>
+
+</div>
+
+
+
+
+
 ## Acknowledgment
 Sincerely thanks for SPFormer repo. This repo is build upon it.
+
+
 
 
 
