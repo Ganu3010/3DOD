@@ -30,7 +30,7 @@ Requirements
 
 - Python 3.x
 - Pytorch 1.10
-- CUDA 10.x or higher
+- CUDA 11.x or higher
 
 The following installation suppose `python=3.8` `pytorch=1.10` and `cuda=11.4`.
 
@@ -44,19 +44,19 @@ The following installation suppose `python=3.8` `pytorch=1.10` and `cuda=11.4`.
 - Clone the repository
 
   ```
-  git clone https://github.com/sunjiahao1999/SPFormer.git
+  git clone https://github.com/SpookyWooky5/SPFormer.git
   ```
 
 - Install the dependencies
 
-  Install [Pytorch 1.10](https://pytorch.org/)
+  Install [Pytorch 2.1.2](https://pytorch.org/)
 
   ```
-  pip install spconv-cu114
-  conda install pytorch-scatter -c pyg
+  pip install spconv-cu120 # or appropriate version
+  conda install pytorch-scatter -c pyg # if you face errors, refer to https://data.pyg.org/whl/ to install appropriate versions
   pip install -r requirements.txt
   ```
-  To install SPFormer/segmentator, change:
+  To install SPFormer/segmentator from this [repo](https://github.com/Karbo123/segmentator) (We wrap the segmentator in ScanNet), and change:
   ```
   set(CMAKE_CXX_STANDARD 14)
   ```
@@ -66,7 +66,6 @@ The following installation suppose `python=3.8` `pytorch=1.10` and `cuda=11.4`.
   ```
   in segmentator/csrc/CMakeLists.txt
   Follow remaining steps as specified in segmentator.
-  Install segmentator from this [repo](https://github.com/Karbo123/segmentator) (We wrap the segmentator in ScanNet).
 
 - Setup, Install spformer and pointgroup_ops.
 
@@ -83,7 +82,7 @@ The following installation suppose `python=3.8` `pytorch=1.10` and `cuda=11.4`.
 
 Download the [ScanNet](http://www.scan-net.org/) v2 dataset.
 
-Put the downloaded `scans` and `scans_test` folder as follows.
+Put the downloaded `scans` and `scans_test` folder as follows. Symbolic linkages also work if data exists on an external drive.
 
 ```
 SPFormer
@@ -139,6 +138,7 @@ python tools/train.py configs/spf_scannet.yaml
 Download [SPFormer](https://drive.google.com/file/d/1BKuaLTU3TFgekYAssSVxPO0sHWj-LGlH/view?usp=sharing) pretrain model and move it to checkpoints. Its performance on ScanNet v2 validation set is 56.3/73.9/82.9 in terms of mAP/mAP50/mAP25.
 
 ```
+cd website/SPFormer
 python tools/test.py configs/spf_scannet.yaml checkpoints/spf_scannet_512.pth
 ```
 
@@ -147,6 +147,7 @@ python tools/test.py configs/spf_scannet.yaml checkpoints/spf_scannet_512.pth
 Before visualization, you need to write the output results of inference.
 
 ```
+cd website/SPFormer
 python tools/test.py configs/spf_scannet.yaml ${CHECKPOINT} --out ${SAVE_PATH}
 ```
 
@@ -183,7 +184,7 @@ You can visualize by Open3D or visualize saved `.ply` files on MeshLab. Argument
 
 
 ## Acknowledgment
-Sincerely thanks for SPFormer repo. This repo is build upon it.
+Sincerely thanks to the original SPFormer repo. This repo is build upon it.
 
 
 

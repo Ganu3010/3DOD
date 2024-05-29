@@ -188,7 +188,7 @@ pycodestyle==2.11.1
 pycparser==2.21
 pycryptodome==3.20.0
 pyflakes==3.2.0
-pyg-lib @ file:///home/aether/coding/pcd/oneformer3d/whls/pyg_lib-0.3.1%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=f2c7ea2763e6e4070ed4ede4a14152c4ec6093c39a59f55327e259d72a76dd5f
+pyg-lib #@ file:///home/aether/coding/pcd/oneformer3d/whls/pyg_lib-0.3.1%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=f2c7ea2763e6e4070ed4ede4a14152c4ec6093c39a59f55327e259d72a76dd5f
 Pygments==2.17.2
 pynvml==11.5.0
 pyparsing==3.1.1
@@ -246,10 +246,10 @@ timm==0.9.12
 tinycss2==1.2.1
 tomli==2.0.1
 torch==2.1.2
-torch-cluster @ file:///home/aether/coding/pcd/oneformer3d/whls/torch_cluster-1.6.3%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=6c8ce418ac60f02c0ae4352b973ce4ebed0f9e4bb2fd3e58766aaf48262f0851
-torch-scatter @ file:///home/aether/coding/pcd/oneformer3d/whls/torch_scatter-2.1.2%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=eb700991c777d27d417bfd99179d6231364dd07a2a2b063c02973fdc262b8973
-torch-sparse @ file:///home/aether/coding/pcd/oneformer3d/whls/torch_sparse-0.6.18%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=627a668fe72bd46f4faf304a76f336e599af9a101a3e3ae9376e8ef7d8e14362
-torch-spline-conv @ file:///home/aether/coding/pcd/oneformer3d/whls/torch_spline_conv-1.2.2%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=6c4a7566e9568e9ab798148bcc60114c6012aa27f5c37c7aa2491a2aa521aab1
+torch-cluster #@ file:///home/aether/coding/pcd/oneformer3d/whls/torch_cluster-1.6.3%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=6c8ce418ac60f02c0ae4352b973ce4ebed0f9e4bb2fd3e58766aaf48262f0851
+torch-scatter #@ file:///home/aether/coding/pcd/oneformer3d/whls/torch_scatter-2.1.2%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=eb700991c777d27d417bfd99179d6231364dd07a2a2b063c02973fdc262b8973
+torch-sparse #@ file:///home/aether/coding/pcd/oneformer3d/whls/torch_sparse-0.6.18%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=627a668fe72bd46f4faf304a76f336e599af9a101a3e3ae9376e8ef7d8e14362
+torch-spline-conv #@ file:///home/aether/coding/pcd/oneformer3d/whls/torch_spline_conv-1.2.2%2Bpt21cu121-cp38-cp38-linux_x86_64.whl#sha256=6c4a7566e9568e9ab798148bcc60114c6012aa27f5c37c7aa2491a2aa521aab1
 torch_geometric==2.5.0
 torchaudio==2.1.2
 torchmetrics==1.3.2
